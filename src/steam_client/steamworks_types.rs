@@ -16,7 +16,7 @@
 #![allow(clippy::upper_case_acronyms, clippy::enum_variant_names)]
 
 use crate::steam_client::steam_client_vtable::ISteamClient;
-use std::os::raw::{c_char, c_int, c_uint};
+use std::os::raw::{c_char, c_int, c_void};
 
 pub type AppId_t = u32;
 pub type DepotId_t = u32;
@@ -28,6 +28,8 @@ pub type CreateInterfaceFn = unsafe extern "C" fn(*const c_char, *mut c_int) -> 
 pub type SteamGetCallbackFn =
     unsafe extern "C" fn(HSteamPipe, *mut SteamCallbackMessage, *mut c_int) -> bool;
 pub type SteamFreeLastCallbackFn = unsafe extern "C" fn(HSteamPipe) -> bool;
+pub type SteamGetAPICallResultFn =
+    unsafe extern "C" fn(HSteamPipe, SteamAPICall_t, *mut c_void, c_int, c_int, *mut bool) -> bool;
 
 #[allow(non_upper_case_globals)]
 const k_cchStatNameMax: usize = 128;
@@ -224,11 +226,12 @@ pub struct LeaderboardEntry_t {
     pub m_hUGC: UGCHandle_t,
 }
 
+// Raw: an `EResult` Valve added since would not be a valid enum.
 #[cfg_attr(windows, repr(C, packed(8)))]
 #[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct UserStatsReceived_t {
     pub m_nGameID: u64,
-    pub m_eResult: EResult,
+    pub m_eResult: i32,
     pub m_steamIDUser: CSteamID,
 }
 
@@ -299,9 +302,17 @@ pub struct UserAchievementIconFetched_t {
 
 #[cfg_attr(windows, repr(C, packed(8)))]
 #[cfg_attr(not(windows), repr(C, packed(4)))]
+pub struct SteamAPICallCompleted_t {
+    pub m_hAsyncCall: SteamAPICall_t,
+    pub m_iCallback: c_int,
+    pub m_cubParam: u32,
+}
+
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct GlobalAchievementPercentagesReady_t {
     pub m_nGameID: u64,
-    pub m_eResult: EResult,
+    pub m_eResult: i32,
 }
 
 #[cfg_attr(windows, repr(C, packed(8)))]
@@ -417,29 +428,20 @@ pub enum ECheckFileSignature {
     NoSignaturesFoundForThisFile = 4,
 }
 
+// Packs appID:24, type:8, modID:32 into one u64. Must stay exactly 8 bytes: it is
+// passed by value and embedded in `FriendGameInfo_t`.
 #[repr(C)]
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum EGameIDType {
-    App = 0,
-    GameMod = 1,
-    Shortcut = 2,
-    P2P = 3,
-}
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union CGameID {
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct CGameID {
     m_ulGameID: u64,
-    m_gameID: GameID_t,
 }
 
-#[repr(C)]
-#[derive(Copy, Clone, Debug)]
-pub struct GameID_t {
-    pub m_nAppID: c_uint,
-    pub m_nType: EGameIDType,
-    #[cfg(not(target_endian = "big"))]
-    pub m_nModID: u32,
+impl CGameID {
+    pub const fn from_app_id(app_id: AppId_t) -> Self {
+        Self {
+            m_ulGameID: (app_id as u64) & 0x00ff_ffff,
+        }
+    }
 }
 
 #[repr(C)]

@@ -73,6 +73,12 @@
             <description>Whether to disable card hover animations in the app list.</description>
         </key>
 
+        <key name="appear-in-game" type="b">
+            <default>true</default>
+            <summary>Appear In-Game While Managing</summary>
+            <description>When enabled, managing an app connects to Steam as that app, so friends see you playing it. When disabled, SamRewritten drives Steam's client interface instead and no game is shown on your profile.</description>
+        </key>
+
         <key name="unlock-mode" type="s">
             <default>'autocommit'</default>
             <summary>Achievement Unlock Mode</summary>

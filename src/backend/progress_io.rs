@@ -15,7 +15,7 @@
 
 use crate::backend::app_manager::{AppManager, StatState};
 use crate::backend::stat_definitions::StatInfo;
-use crate::utils::app_paths::get_executable_path;
+use crate::backend::stats_access::app_server_command;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
 use crate::utils::ipc_types::parse_response_bytes;
@@ -25,7 +25,6 @@ use crate::utils::ipc_types::{
 };
 use serde::de::IgnoredAny;
 use std::fmt::Display;
-use std::process::Command;
 use std::sync::{Arc, Mutex};
 
 /// Progress callback fired from worker threads as each item completes. Borrowed
@@ -114,8 +113,7 @@ fn run_one(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
 }
 
 fn run_one_attempt(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
-    let current_exe = get_executable_path();
-    let child = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))?;
+    let child = BidirChild::new(&mut app_server_command(app_id))?;
     let mut ipc = IpcClient::new(child);
 
     let response = ipc.send(&command).and_then(|_| ipc.recv_frame());

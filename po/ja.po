@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 01:06+0200\n"
+"POT-Creation-Date: 2026-08-30 23:21+0200\n"
 "PO-Revision-Date: 2026-08-23 00:35+0900\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:330
+#: src/gui_frontend/app_list_view/mod.rs:380
 msgid "Loading..."
 msgstr "読み込み中..."
 
@@ -40,67 +40,71 @@ msgstr "選択したアプリの進行状況をエクスポート"
 msgid "Import progress..."
 msgstr "進行状況をインポート..."
 
-#: src/gui_frontend/ui_components.rs:215
+#: src/gui_frontend/ui_components.rs:216
+msgid "Appear in-game while managing"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:222
 msgid "Refresh app list"
 msgstr "アプリ一覧を更新"
 
-#: src/gui_frontend/ui_components.rs:219
+#: src/gui_frontend/ui_components.rs:226
 msgid "Refresh achievement counts"
 msgstr ""
 
-#: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
+#: src/gui_frontend/ui_components.rs:229 src/gui_frontend/ui_components.rs:413
 msgid "About"
 msgstr "このアプリについて"
 
-#: src/gui_frontend/ui_components.rs:226
+#: src/gui_frontend/ui_components.rs:233
 msgid "Change Steam folder…"
 msgstr "Steamフォルダを変更…"
 
-#: src/gui_frontend/ui_components.rs:233
+#: src/gui_frontend/ui_components.rs:240
 msgid "Bulk process"
 msgstr "一括処理"
 
-#: src/gui_frontend/ui_components.rs:239
+#: src/gui_frontend/ui_components.rs:246
 msgid "System"
 msgstr "システム"
 
-#: src/gui_frontend/ui_components.rs:240
+#: src/gui_frontend/ui_components.rs:247
 msgid "Light"
 msgstr "ライト"
 
-#: src/gui_frontend/ui_components.rs:241
+#: src/gui_frontend/ui_components.rs:248
 msgid "Dark"
 msgstr "ダーク"
 
-#: src/gui_frontend/ui_components.rs:250
+#: src/gui_frontend/ui_components.rs:257
 msgid "Disable animations"
 msgstr "アニメーションを無効化"
 
-#: src/gui_frontend/ui_components.rs:254
+#: src/gui_frontend/ui_components.rs:261
 msgid "Appearance"
 msgstr "外観"
 
-#: src/gui_frontend/ui_components.rs:260
+#: src/gui_frontend/ui_components.rs:267
 msgid "System default"
 msgstr "システムの既定"
 
-#: src/gui_frontend/ui_components.rs:263
+#: src/gui_frontend/ui_components.rs:270
 msgid "Language"
 msgstr "言語"
 
-#: src/gui_frontend/ui_components.rs:380
+#: src/gui_frontend/ui_components.rs:387
 msgid "Game default"
 msgstr "ゲームの既定"
 
-#: src/gui_frontend/ui_components.rs:399
+#: src/gui_frontend/ui_components.rs:406
 msgid "Refresh achievements & stats"
 msgstr "実績と統計を更新"
 
-#: src/gui_frontend/ui_components.rs:403
+#: src/gui_frontend/ui_components.rs:410
 msgid "Reset everything"
 msgstr "すべてをリセット"
 
-#: src/gui_frontend/ui_components.rs:411
+#: src/gui_frontend/ui_components.rs:418
 msgid "Achievement language"
 msgstr "実績の言語"
 
@@ -112,9 +116,9 @@ msgid "OK"
 msgstr "OK"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
-#: src/gui_frontend/profile_view/mod.rs:599
+#: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:455
+#: src/gui_frontend/app_list_view/refresh_actions.rs:433
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -139,9 +143,9 @@ msgstr "<b>すでにSteamをインストールしていますか？</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://"
-"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
-"report your issue."
+"to it using environment variables. Please check the <a href=\"https://github."
+"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
+"your issue."
 msgstr ""
 "Steamをカスタムの場所にインストールしている場合は、環境変数でSamRewrittenに場"
 "所を指定できます。手順や問題の報告については<a href=\"https://github.com/"
@@ -434,26 +438,37 @@ msgstr "フレンドを検索するかSteamID64を貼り付けてください"
 msgid "Clear selected user"
 msgstr "選択したユーザーをクリア"
 
-#: src/gui_frontend/app_list_view/mod.rs:351
+#: src/gui_frontend/app_list_view/mod.rs:401
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr "SamRewrittenはSteamに接続できませんでした。起動していますか？"
 
-#: src/gui_frontend/app_list_view/mod.rs:356
+#: src/gui_frontend/app_list_view/mod.rs:406
 msgid "Try again"
 msgstr "もう一度試す"
 
-#: src/gui_frontend/app_list_view/mod.rs:373
-#: src/gui_frontend/app_list_view/mod.rs:1476
+#: src/gui_frontend/app_list_view/mod.rs:423
+#: src/gui_frontend/app_list_view/mod.rs:1605
 msgid "Name or AppId (Ctrl+K)"
 msgstr "名前またはAppID (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:389
+#: src/gui_frontend/app_list_view/mod.rs:439
 msgid "Show or hide the sidebar"
 msgstr "サイドバーを表示・非表示にする"
 
-#: src/gui_frontend/app_list_view/mod.rs:1471
+#: src/gui_frontend/app_list_view/mod.rs:1600
 msgid "Achievement or stat..."
 msgstr "実績または統計…"
+
+#: src/gui_frontend/app_list_view/mod.rs:1719
+#: src/gui_frontend/app_list_view/settings_bindings.rs:265
+msgid "Could not change the in-game setting"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/mod.rs:1721
+#: src/gui_frontend/app_list_view/settings_bindings.rs:266
+#, fuzzy
+msgid "The change could not be applied. Restart SamRewritten and try again."
+msgstr "新しい言語はSamRewrittenを再起動すると適用されます。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
@@ -508,7 +523,7 @@ msgid "View profile"
 msgstr "プロフィールを表示"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:208
-#: src/gui_frontend/profile_view/mod.rs:481
+#: src/gui_frontend/profile_view/mod.rs:484
 msgid "Steam user"
 msgstr "Steamユーザー"
 
@@ -572,54 +587,54 @@ msgstr "このゲームの残りのアンロックは、別のタイミングで
 msgid "at the very start of this game's history, ordinary unlocks after it"
 msgstr "ゲーム履歴の最初にあり、その後は通常のアンロックが続いています"
 
-#: src/gui_frontend/profile_view/mod.rs:266
-#: src/gui_frontend/profile_view/mod.rs:290
+#: src/gui_frontend/profile_view/mod.rs:264
+#: src/gui_frontend/profile_view/mod.rs:288
 msgid "No unlocks yet."
 msgstr "まだアンロックされていません。"
 
-#: src/gui_frontend/profile_view/mod.rs:294
+#: src/gui_frontend/profile_view/mod.rs:292
 msgid "{total} unlocked since {since}."
 msgstr "{since}以降で{total}件アンロック。"
 
-#: src/gui_frontend/profile_view/mod.rs:298
+#: src/gui_frontend/profile_view/mod.rs:296
 msgid "{year} in the last year, {total} since {since}."
 msgstr "直近1年間で{year}件、{since}以降で合計{total}件。"
 
-#: src/gui_frontend/profile_view/mod.rs:303
+#: src/gui_frontend/profile_view/mod.rs:301
 msgid "{count} in {year}, {total} since {since}."
 msgstr "{year}年に{count}件、{since}以降で合計{total}件。"
 
-#: src/gui_frontend/profile_view/mod.rs:559
+#: src/gui_frontend/profile_view/mod.rs:563
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:572
-#: src/gui_frontend/profile_view/mod.rs:898
+#: src/gui_frontend/profile_view/mod.rs:576
+#: src/gui_frontend/profile_view/mod.rs:905
 msgid "Read all my games"
 msgstr "すべてのゲームを読み込む"
 
-#: src/gui_frontend/profile_view/mod.rs:642
+#: src/gui_frontend/profile_view/mod.rs:647
 msgid "Year to show"
 msgstr "表示する年"
 
-#: src/gui_frontend/profile_view/mod.rs:657
+#: src/gui_frontend/profile_view/mod.rs:662
 msgid "Everything here looks like ordinary play."
 msgstr "ここに表示されているものはすべて、通常のプレイに見えます。"
 
-#: src/gui_frontend/profile_view/mod.rs:701
+#: src/gui_frontend/profile_view/mod.rs:706
 msgid "Unlock activity"
 msgstr "アンロック履歴"
 
-#: src/gui_frontend/profile_view/mod.rs:719
+#: src/gui_frontend/profile_view/mod.rs:724
 msgid "Completion over time"
 msgstr "時間経過による達成率"
 
-#: src/gui_frontend/profile_view/mod.rs:725
+#: src/gui_frontend/profile_view/mod.rs:730
 msgid "Irregular activity history"
 msgstr "不自然なアクティビティ履歴"
 
-#: src/gui_frontend/profile_view/mod.rs:728
+#: src/gui_frontend/profile_view/mod.rs:733
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
@@ -627,15 +642,15 @@ msgstr ""
 "Steamプロフィールを訪れた人には、各実績をいつ解除したかが表示されます。ここに"
 "は、通常のプレイとは思えないタイミングを記載しています。"
 
-#: src/gui_frontend/profile_view/mod.rs:869
+#: src/gui_frontend/profile_view/mod.rs:880
 msgid "{hours} h"
 msgstr "{hours}時間"
 
-#: src/gui_frontend/profile_view/mod.rs:896
+#: src/gui_frontend/profile_view/mod.rs:903
 msgid "Rescan now"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:911
+#: src/gui_frontend/profile_view/mod.rs:919
 msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
@@ -643,7 +658,7 @@ msgstr ""
 "ゲームの実績を読み込んでいます（{measured}/{total}）。下のアクティビティとプ"
 "レイ履歴は、読み込みに合わせて表示されます。"
 
-#: src/gui_frontend/profile_view/mod.rs:915
+#: src/gui_frontend/profile_view/mod.rs:923
 msgid ""
 "Only {measured} of your {total} games have been read from Steam, so the "
 "figures above cannot be totalled yet."
@@ -651,24 +666,24 @@ msgstr ""
 "Steamから{total}個のゲームのうち{measured}個しか読み込まれていないため、上記"
 "の数値はまだ合計できません。"
 
-#: src/gui_frontend/profile_view/mod.rs:933
+#: src/gui_frontend/profile_view/mod.rs:963
 msgid "Waiting for Steam to say who is signed in."
 msgstr "Steamからサインイン中のユーザー情報が取得されるのを待っています。"
 
-#: src/gui_frontend/profile_view/mod.rs:941
+#: src/gui_frontend/profile_view/mod.rs:971
 msgid "Reading your unlock history…"
 msgstr "アンロック履歴を読み込んでいます…"
 
-#: src/gui_frontend/profile_view/mod.rs:995
-#: src/gui_frontend/profile_view/mod.rs:1000
+#: src/gui_frontend/profile_view/mod.rs:1027
+#: src/gui_frontend/profile_view/mod.rs:1032
 msgid "Your unlock history could not be read."
 msgstr "アンロック履歴を読み込めませんでした。"
 
-#: src/gui_frontend/profile_view/mod.rs:1088
+#: src/gui_frontend/profile_view/mod.rs:1138
 msgid "No completion to plot yet."
 msgstr "まだ表示できる達成状況はありません。"
 
-#: src/gui_frontend/profile_view/mod.rs:1090
+#: src/gui_frontend/profile_view/mod.rs:1140
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
@@ -676,7 +691,7 @@ msgstr ""
 "開始したゲームの平均値なので、新しいゲームを始めると下がります。現在は"
 "{percent}%です。"
 
-#: src/gui_frontend/profile_view/mod.rs:1099
+#: src/gui_frontend/profile_view/mod.rs:1149
 msgid ""
 "The activity below is missing {count} game(s). Restart Steam to get them "
 "back."
@@ -684,19 +699,19 @@ msgstr ""
 "以下のアクティビティには{count}個のゲームが表示されていません。Steamを再起動"
 "すると表示されます。"
 
-#: src/gui_frontend/profile_view/mod.rs:1118
+#: src/gui_frontend/profile_view/mod.rs:1168
 msgid "Select these {games} games"
 msgstr "これら{games}個のゲームを選択する"
 
-#: src/gui_frontend/profile_view/mod.rs:1136
+#: src/gui_frontend/profile_view/mod.rs:1186
 msgid "{count} achievements across {games} games"
 msgstr "{games}個のゲームで{count}件の実績"
 
-#: src/gui_frontend/profile_view/mod.rs:1139
+#: src/gui_frontend/profile_view/mod.rs:1189
 msgid "{when} — one game after another, in a single sitting"
 msgstr "{when} — 1回のプレイで、次々とゲームをプレイ"
 
-#: src/gui_frontend/profile_view/mod.rs:1146
+#: src/gui_frontend/profile_view/mod.rs:1196
 #: src/gui_frontend/profile_view/journal_section.rs:251
 #: src/gui_frontend/app_list_view/progress_actions.rs:377
 #: src/gui_frontend/app_list_view/progress_actions.rs:399
@@ -704,39 +719,39 @@ msgstr "{when} — 1回のプレイで、次々とゲームをプレイ"
 msgid "App {id}"
 msgstr "アプリ {id}"
 
-#: src/gui_frontend/profile_view/mod.rs:1154
+#: src/gui_frontend/profile_view/mod.rs:1204
 msgid "Open {app}"
 msgstr "{app}を開く"
 
-#: src/gui_frontend/profile_view/mod.rs:1168
+#: src/gui_frontend/profile_view/mod.rs:1218
 msgid "{when}, all in the same second"
 msgstr "{when}、すべて同じ時間"
 
-#: src/gui_frontend/profile_view/mod.rs:1170
+#: src/gui_frontend/profile_view/mod.rs:1220
 msgid "{when}, inside {span} second(s)"
 msgstr "{when}、{span}秒以内"
 
-#: src/gui_frontend/profile_view/mod.rs:1175
+#: src/gui_frontend/profile_view/mod.rs:1225
 msgid "{count} achievements in {app}"
 msgstr "{app}の実績{count}件"
 
-#: src/gui_frontend/profile_view/mod.rs:1178
+#: src/gui_frontend/profile_view/mod.rs:1228
 msgid "{timing} — {reading}"
 msgstr "{timing} — {reading}"
 
-#: src/gui_frontend/profile_view/mod.rs:1190
+#: src/gui_frontend/profile_view/mod.rs:1240
 msgid "… and {count} more that stand out less."
 msgstr "…その他{count}件は目立ったものではありません。"
 
-#: src/gui_frontend/profile_view/mod.rs:1208
+#: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1212
+#: src/gui_frontend/profile_view/mod.rs:1261
 msgid "Steam last refreshed these figures on {date}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1215
+#: src/gui_frontend/profile_view/mod.rs:1264
 msgid "How old these figures are is unknown."
 msgstr ""
 
@@ -968,45 +983,45 @@ msgstr "元に戻す際に予期しないエラーが発生しました："
 msgid "Undo incomplete"
 msgstr "元に戻す処理が未完了"
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:134
+#: src/gui_frontend/app_list_view/settings_bindings.rs:138
 msgid "The new language will be applied the next time you start SamRewritten."
 msgstr "新しい言語はSamRewrittenを再起動すると適用されます。"
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:144
+#: src/gui_frontend/app_list_view/settings_bindings.rs:148
 msgid "Language changed"
 msgstr "言語が変更されました"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:152
-#: src/gui_frontend/app_list_view/bulk_actions.rs:176
+#: src/gui_frontend/app_list_view/bulk_actions.rs:150
+#: src/gui_frontend/app_list_view/bulk_actions.rs:174
 msgid "Unlocking {done} / {total} app(s)…"
 msgstr "アンロック中：{done}/{total}件のアプリ…"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:209
+#: src/gui_frontend/app_list_view/bulk_actions.rs:207
 msgid "every achievement unlocked"
 msgstr "すべての実績をアンロック"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:242
+#: src/gui_frontend/app_list_view/bulk_actions.rs:240
 msgid "Unlock incomplete"
 msgstr "アンロック未完了"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:243
+#: src/gui_frontend/app_list_view/bulk_actions.rs:241
 msgid "Failed to unlock achievements for the following apps:"
 msgstr "以下のアプリの実績アンロックに失敗しました:"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:325
-#: src/gui_frontend/app_list_view/bulk_actions.rs:352
+#: src/gui_frontend/app_list_view/bulk_actions.rs:323
+#: src/gui_frontend/app_list_view/bulk_actions.rs:350
 msgid "Locking {done} / {total} app(s)…"
 msgstr "ロック中：{done}/{total}件のアプリ…"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:377
+#: src/gui_frontend/app_list_view/bulk_actions.rs:375
 msgid "every achievement and stat reset"
 msgstr "すべての実績と統計をリセット"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:416
+#: src/gui_frontend/app_list_view/bulk_actions.rs:414
 msgid "Reset incomplete"
 msgstr "リセット未完了"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:417
+#: src/gui_frontend/app_list_view/bulk_actions.rs:415
 msgid "The following apps were left as they were:"
 msgstr "以下のアプリは変更されませんでした："
 
@@ -1169,18 +1184,18 @@ msgstr ""
 msgid "Import complete"
 msgstr "インポート完了"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:114
+#: src/gui_frontend/app_list_view/refresh_actions.rs:118
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 "アカウント内にアプリが見つかりませんでした。App IDを検索して開始してくださ"
 "い。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:131
+#: src/gui_frontend/app_list_view/refresh_actions.rs:135
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 "結果が見つかりませんでした。スペルを確認するか、App IDを入力してください。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:163
+#: src/gui_frontend/app_list_view/refresh_actions.rs:145
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
@@ -1188,15 +1203,15 @@ msgstr ""
 "ライブラリの読み込みに失敗しました。インターネット接続を確認し、App IDを検索"
 "して開始してください。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:453
+#: src/gui_frontend/app_list_view/refresh_actions.rs:431
 msgid "Reset Everything"
 msgstr "すべてリセット"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:454
+#: src/gui_frontend/app_list_view/refresh_actions.rs:432
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr "このアプリのすべての実績と統計をリセットします。本当によろしいですか？"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:455
+#: src/gui_frontend/app_list_view/refresh_actions.rs:433
 msgid "Sure, reset"
 msgstr "はい、リセットします"
 

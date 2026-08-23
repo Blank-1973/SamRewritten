@@ -17,14 +17,14 @@ use super::PrefetchedProgress;
 use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{
-    set_app_action_enabled, set_timed_unlock_actions_enabled,
+    set_app_action_enabled, set_selection_actions_enabled, set_timed_unlock_actions_enabled,
 };
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{
-    AppProgress, GetAchievementsAndStats, GetRunningApps, GetSubscribedAppList, Request, ResetStats,
+    AppProgress, GetAchievementsAndStats, GetSubscribedAppList, Request, ResetStats,
 };
 use crate::gui_frontend::ui_components::set_achievement_languages;
 use crate::utils::action_journal::{self, Batch, Change, Op};
@@ -79,8 +79,7 @@ pub fn create_refresh_app_list_action(
         on_library_loaded,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
-            set_app_action_enabled(&application, "unlock_all_apps", false);
-            set_app_action_enabled(&application, "lock_all_apps", false);
+            set_selection_actions_enabled(&application, false);
             search_entry.set_sensitive(false);
             let apps = spawn_blocking(move || {
                 GetSubscribedAppList {
@@ -138,30 +137,7 @@ pub fn create_refresh_app_list_action(
 
                                 // Sync idle state from the orchestrator: any app it's
                                 // currently holding open should show as idling in the UI.
-                                let running = spawn_blocking(|| GetRunningApps.request());
-                                MainContext::default().spawn_local(clone!(
-                                    #[weak]
-                                    list_store,
-                                    #[strong]
-                                    idle_count,
-                                    async move {
-                                        let Ok(Ok(running)) = running.await else {
-                                            return;
-                                        };
-                                        let running: std::collections::HashSet<u32> =
-                                            running.into_iter().collect();
-                                        let n = list_store.n_items();
-                                        for i in 0..n {
-                                            if let Some(item) = list_store.item(i)
-                                                && let Ok(app) = item.downcast::<GSteamAppObject>()
-                                                && running.contains(&app.app_id())
-                                            {
-                                                app.set_is_idling(true);
-                                            }
-                                        }
-                                        super::recompute_idle_cap(&list_store, &idle_count);
-                                    }
-                                ));
+                                super::sync_idle_from_orchestrator(&list_store, &idle_count);
                             }
                         },
                         Ok(Err(SamError::AppListRetrievalFailed)) => {

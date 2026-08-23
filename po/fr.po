@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 01:06+0200\n"
+"POT-Creation-Date: 2026-08-30 23:21+0200\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:330
+#: src/gui_frontend/app_list_view/mod.rs:380
 msgid "Loading..."
 msgstr "Chargement..."
 
@@ -39,67 +39,71 @@ msgstr "Exporter la progression sélection"
 msgid "Import progress..."
 msgstr "Importer progression..."
 
-#: src/gui_frontend/ui_components.rs:215
+#: src/gui_frontend/ui_components.rs:216
+msgid "Appear in-game while managing"
+msgstr "Apparaître in-game pendant l'édition"
+
+#: src/gui_frontend/ui_components.rs:222
 msgid "Refresh app list"
 msgstr "Actualiser la liste des apps"
 
-#: src/gui_frontend/ui_components.rs:219
+#: src/gui_frontend/ui_components.rs:226
 msgid "Refresh achievement counts"
 msgstr "Actualiser le décompte de succès"
 
-#: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
+#: src/gui_frontend/ui_components.rs:229 src/gui_frontend/ui_components.rs:413
 msgid "About"
 msgstr "À propos"
 
-#: src/gui_frontend/ui_components.rs:226
+#: src/gui_frontend/ui_components.rs:233
 msgid "Change Steam folder…"
 msgstr "Changer le dossier Steam…"
 
-#: src/gui_frontend/ui_components.rs:233
+#: src/gui_frontend/ui_components.rs:240
 msgid "Bulk process"
 msgstr "Traitement par lot"
 
-#: src/gui_frontend/ui_components.rs:239
+#: src/gui_frontend/ui_components.rs:246
 msgid "System"
 msgstr "Système"
 
-#: src/gui_frontend/ui_components.rs:240
+#: src/gui_frontend/ui_components.rs:247
 msgid "Light"
 msgstr "Clair"
 
-#: src/gui_frontend/ui_components.rs:241
+#: src/gui_frontend/ui_components.rs:248
 msgid "Dark"
 msgstr "Sombre"
 
-#: src/gui_frontend/ui_components.rs:250
+#: src/gui_frontend/ui_components.rs:257
 msgid "Disable animations"
 msgstr "Désactiver les animations"
 
-#: src/gui_frontend/ui_components.rs:254
+#: src/gui_frontend/ui_components.rs:261
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/gui_frontend/ui_components.rs:260
+#: src/gui_frontend/ui_components.rs:267
 msgid "System default"
 msgstr "Système par défaut"
 
-#: src/gui_frontend/ui_components.rs:263
+#: src/gui_frontend/ui_components.rs:270
 msgid "Language"
 msgstr "Langue"
 
-#: src/gui_frontend/ui_components.rs:380
+#: src/gui_frontend/ui_components.rs:387
 msgid "Game default"
 msgstr "Langue du jeu"
 
-#: src/gui_frontend/ui_components.rs:399
+#: src/gui_frontend/ui_components.rs:406
 msgid "Refresh achievements & stats"
 msgstr "Actualiser les succès et statistiques"
 
-#: src/gui_frontend/ui_components.rs:403
+#: src/gui_frontend/ui_components.rs:410
 msgid "Reset everything"
 msgstr "Tout réinitialiser"
 
-#: src/gui_frontend/ui_components.rs:411
+#: src/gui_frontend/ui_components.rs:418
 msgid "Achievement language"
 msgstr "Langue des succès"
 
@@ -111,9 +115,9 @@ msgid "OK"
 msgstr "OK"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
-#: src/gui_frontend/profile_view/mod.rs:599
+#: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:455
+#: src/gui_frontend/app_list_view/refresh_actions.rs:433
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -138,9 +142,9 @@ msgstr "<b>Steam est déjà installé ?</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://"
-"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
-"report your issue."
+"to it using environment variables. Please check the <a href=\"https://github."
+"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
+"your issue."
 msgstr ""
 "Si vous avez installé Steam dans un emplacement personnalisé, vous pouvez "
 "l'indiquer à SamRewritten à l'aide de variables d'environnement. Consultez "
@@ -436,26 +440,36 @@ msgstr "Rechercher des amis ou coller un SteamID64"
 msgid "Clear selected user"
 msgstr "Effacer l'utilisateur sélectionné"
 
-#: src/gui_frontend/app_list_view/mod.rs:351
+#: src/gui_frontend/app_list_view/mod.rs:401
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr "SamRewritten n'a pas pu se connecter à Steam. Est-il bien lancé ?"
 
-#: src/gui_frontend/app_list_view/mod.rs:356
+#: src/gui_frontend/app_list_view/mod.rs:406
 msgid "Try again"
 msgstr "Réessayer"
 
-#: src/gui_frontend/app_list_view/mod.rs:373
-#: src/gui_frontend/app_list_view/mod.rs:1476
+#: src/gui_frontend/app_list_view/mod.rs:423
+#: src/gui_frontend/app_list_view/mod.rs:1605
 msgid "Name or AppId (Ctrl+K)"
 msgstr "Nom ou AppId (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:389
+#: src/gui_frontend/app_list_view/mod.rs:439
 msgid "Show or hide the sidebar"
 msgstr "Afficher ou masquer la barre latérale"
 
-#: src/gui_frontend/app_list_view/mod.rs:1471
+#: src/gui_frontend/app_list_view/mod.rs:1600
 msgid "Achievement or stat..."
 msgstr "Succès ou statistique..."
+
+#: src/gui_frontend/app_list_view/mod.rs:1719
+#: src/gui_frontend/app_list_view/settings_bindings.rs:265
+msgid "Could not change the in-game setting"
+msgstr "Impossible de changer l'option in-game"
+
+#: src/gui_frontend/app_list_view/mod.rs:1721
+#: src/gui_frontend/app_list_view/settings_bindings.rs:266
+msgid "The change could not be applied. Restart SamRewritten and try again."
+msgstr "Le changement n'a pas pu être appliqué. Redémarrez SamRewritten et réessayez."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
@@ -510,7 +524,7 @@ msgid "View profile"
 msgstr "Voir le profil"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:208
-#: src/gui_frontend/profile_view/mod.rs:481
+#: src/gui_frontend/profile_view/mod.rs:484
 msgid "Steam user"
 msgstr "Utilisateur Steam"
 
@@ -574,56 +588,56 @@ msgstr "le reste de vos déblocages dans ce jeu vient d'autres moments"
 msgid "at the very start of this game's history, ordinary unlocks after it"
 msgstr "tout au début de l'historique du jeu, suivi de déblocages ordinaires"
 
-#: src/gui_frontend/profile_view/mod.rs:266
-#: src/gui_frontend/profile_view/mod.rs:290
+#: src/gui_frontend/profile_view/mod.rs:264
+#: src/gui_frontend/profile_view/mod.rs:288
 msgid "No unlocks yet."
 msgstr "Aucun déblocage pour l'instant."
 
-#: src/gui_frontend/profile_view/mod.rs:294
+#: src/gui_frontend/profile_view/mod.rs:292
 msgid "{total} unlocked since {since}."
 msgstr "{total} débloqués depuis le {since}."
 
-#: src/gui_frontend/profile_view/mod.rs:298
+#: src/gui_frontend/profile_view/mod.rs:296
 msgid "{year} in the last year, {total} since {since}."
 msgstr "{year} sur l'année écoulée, {total} depuis le {since}."
 
-#: src/gui_frontend/profile_view/mod.rs:303
+#: src/gui_frontend/profile_view/mod.rs:301
 msgid "{count} in {year}, {total} since {since}."
 msgstr "{count} en {year}, {total} depuis le {since}."
 
-#: src/gui_frontend/profile_view/mod.rs:559
+#: src/gui_frontend/profile_view/mod.rs:563
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
 msgstr ""
 "Si vous utilisez Steam sur d'autres appareils, mettez à jour ces stats en "
 "lançant un scan complet."
 
-#: src/gui_frontend/profile_view/mod.rs:572
-#: src/gui_frontend/profile_view/mod.rs:898
+#: src/gui_frontend/profile_view/mod.rs:576
+#: src/gui_frontend/profile_view/mod.rs:905
 msgid "Read all my games"
 msgstr "Lire tous mes jeux"
 
-#: src/gui_frontend/profile_view/mod.rs:642
+#: src/gui_frontend/profile_view/mod.rs:647
 msgid "Year to show"
 msgstr "Année affichée"
 
-#: src/gui_frontend/profile_view/mod.rs:657
+#: src/gui_frontend/profile_view/mod.rs:662
 msgid "Everything here looks like ordinary play."
 msgstr "Tout ici ressemble à du jeu ordinaire."
 
-#: src/gui_frontend/profile_view/mod.rs:701
+#: src/gui_frontend/profile_view/mod.rs:706
 msgid "Unlock activity"
 msgstr "Activité de déblocage"
 
-#: src/gui_frontend/profile_view/mod.rs:719
+#: src/gui_frontend/profile_view/mod.rs:724
 msgid "Completion over time"
 msgstr "Complétion au fil du temps"
 
-#: src/gui_frontend/profile_view/mod.rs:725
+#: src/gui_frontend/profile_view/mod.rs:730
 msgid "Irregular activity history"
 msgstr "Historique d'activité irrégulière"
 
-#: src/gui_frontend/profile_view/mod.rs:728
+#: src/gui_frontend/profile_view/mod.rs:733
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
@@ -631,15 +645,15 @@ msgstr ""
 "Quiconque visite votre profil Steam voit quand chaque succès a été débloqué. "
 "Sont listés ici les moments qui ne ressemblent pas à du jeu ordinaire."
 
-#: src/gui_frontend/profile_view/mod.rs:869
+#: src/gui_frontend/profile_view/mod.rs:880
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/gui_frontend/profile_view/mod.rs:896
+#: src/gui_frontend/profile_view/mod.rs:903
 msgid "Rescan now"
 msgstr "Rescanner"
 
-#: src/gui_frontend/profile_view/mod.rs:911
+#: src/gui_frontend/profile_view/mod.rs:919
 msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
@@ -647,7 +661,7 @@ msgstr ""
 "Lecture des succès de vos jeux ({measured}/{total}). L'activité et les "
 "salves ci-dessous se complètent au fur et à mesure."
 
-#: src/gui_frontend/profile_view/mod.rs:915
+#: src/gui_frontend/profile_view/mod.rs:923
 msgid ""
 "Only {measured} of your {total} games have been read from Steam, so the "
 "figures above cannot be totalled yet."
@@ -655,24 +669,24 @@ msgstr ""
 "Seuls {measured} de vos {total} jeux ont été lus depuis Steam ; les stats ci-"
 "dessus ne peuvent pas encore être totalisées."
 
-#: src/gui_frontend/profile_view/mod.rs:933
+#: src/gui_frontend/profile_view/mod.rs:963
 msgid "Waiting for Steam to say who is signed in."
 msgstr "En attente de Steam pour savoir qui est connecté."
 
-#: src/gui_frontend/profile_view/mod.rs:941
+#: src/gui_frontend/profile_view/mod.rs:971
 msgid "Reading your unlock history…"
 msgstr "Lecture de votre historique de déblocages…"
 
-#: src/gui_frontend/profile_view/mod.rs:995
-#: src/gui_frontend/profile_view/mod.rs:1000
+#: src/gui_frontend/profile_view/mod.rs:1027
+#: src/gui_frontend/profile_view/mod.rs:1032
 msgid "Your unlock history could not be read."
 msgstr "Votre historique de déblocages n'a pas pu être lu."
 
-#: src/gui_frontend/profile_view/mod.rs:1088
+#: src/gui_frontend/profile_view/mod.rs:1138
 msgid "No completion to plot yet."
 msgstr "Rien à tracer pour l'instant."
 
-#: src/gui_frontend/profile_view/mod.rs:1090
+#: src/gui_frontend/profile_view/mod.rs:1140
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
@@ -680,7 +694,7 @@ msgstr ""
 "Moyenne sur les jeux que vous avez commencés : elle baisse donc quand vous "
 "en commencez un nouveau. Actuellement à {percent}%."
 
-#: src/gui_frontend/profile_view/mod.rs:1099
+#: src/gui_frontend/profile_view/mod.rs:1149
 msgid ""
 "The activity below is missing {count} game(s). Restart Steam to get them "
 "back."
@@ -688,19 +702,19 @@ msgstr ""
 "Il manque {count} jeu(x) à l'activité ci-dessous. Redémarrez Steam pour les "
 "récupérer."
 
-#: src/gui_frontend/profile_view/mod.rs:1118
+#: src/gui_frontend/profile_view/mod.rs:1168
 msgid "Select these {games} games"
 msgstr "Sélectionner ces {games} jeux"
 
-#: src/gui_frontend/profile_view/mod.rs:1136
+#: src/gui_frontend/profile_view/mod.rs:1186
 msgid "{count} achievements across {games} games"
 msgstr "{count} succès répartis sur {games} jeux"
 
-#: src/gui_frontend/profile_view/mod.rs:1139
+#: src/gui_frontend/profile_view/mod.rs:1189
 msgid "{when} — one game after another, in a single sitting"
 msgstr "{when} — un jeu après l'autre, en une seule séance"
 
-#: src/gui_frontend/profile_view/mod.rs:1146
+#: src/gui_frontend/profile_view/mod.rs:1196
 #: src/gui_frontend/profile_view/journal_section.rs:251
 #: src/gui_frontend/app_list_view/progress_actions.rs:377
 #: src/gui_frontend/app_list_view/progress_actions.rs:399
@@ -708,39 +722,39 @@ msgstr "{when} — un jeu après l'autre, en une seule séance"
 msgid "App {id}"
 msgstr "Application {id}"
 
-#: src/gui_frontend/profile_view/mod.rs:1154
+#: src/gui_frontend/profile_view/mod.rs:1204
 msgid "Open {app}"
 msgstr "Ouvrir {app}"
 
-#: src/gui_frontend/profile_view/mod.rs:1168
+#: src/gui_frontend/profile_view/mod.rs:1218
 msgid "{when}, all in the same second"
 msgstr "{when}, toutes dans la même seconde"
 
-#: src/gui_frontend/profile_view/mod.rs:1170
+#: src/gui_frontend/profile_view/mod.rs:1220
 msgid "{when}, inside {span} second(s)"
 msgstr "{when}, en {span} seconde(s)"
 
-#: src/gui_frontend/profile_view/mod.rs:1175
+#: src/gui_frontend/profile_view/mod.rs:1225
 msgid "{count} achievements in {app}"
 msgstr "{count} succès dans {app}"
 
-#: src/gui_frontend/profile_view/mod.rs:1178
+#: src/gui_frontend/profile_view/mod.rs:1228
 msgid "{timing} — {reading}"
 msgstr "{timing} — {reading}"
 
-#: src/gui_frontend/profile_view/mod.rs:1190
+#: src/gui_frontend/profile_view/mod.rs:1240
 msgid "… and {count} more that stand out less."
 msgstr "… et {count} de plus, qui se détachent moins."
 
-#: src/gui_frontend/profile_view/mod.rs:1208
+#: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
 msgstr "Dernier scan complet le {date}."
 
-#: src/gui_frontend/profile_view/mod.rs:1212
+#: src/gui_frontend/profile_view/mod.rs:1261
 msgid "Steam last refreshed these figures on {date}."
 msgstr "Dernière mise à jour de ces chiffres par Steam le {date}."
 
-#: src/gui_frontend/profile_view/mod.rs:1215
+#: src/gui_frontend/profile_view/mod.rs:1264
 msgid "How old these figures are is unknown."
 msgstr "Des stats plus récentes existent peut-être."
 
@@ -972,46 +986,46 @@ msgstr "Une erreur inattendue s'est produite pendant le retour en arrière :"
 msgid "Undo incomplete"
 msgstr "Retour en arrière incomplet"
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:134
+#: src/gui_frontend/app_list_view/settings_bindings.rs:138
 msgid "The new language will be applied the next time you start SamRewritten."
 msgstr ""
 "La nouvelle langue sera appliquée au prochain démarrage de SamRewritten."
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:144
+#: src/gui_frontend/app_list_view/settings_bindings.rs:148
 msgid "Language changed"
 msgstr "Langue modifiée"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:152
-#: src/gui_frontend/app_list_view/bulk_actions.rs:176
+#: src/gui_frontend/app_list_view/bulk_actions.rs:150
+#: src/gui_frontend/app_list_view/bulk_actions.rs:174
 msgid "Unlocking {done} / {total} app(s)…"
 msgstr "Déverrouillage {done} / {total} application(s)…"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:209
+#: src/gui_frontend/app_list_view/bulk_actions.rs:207
 msgid "every achievement unlocked"
 msgstr "tous les succès débloqués"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:242
+#: src/gui_frontend/app_list_view/bulk_actions.rs:240
 msgid "Unlock incomplete"
 msgstr "Déverrouillage incomplet"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:243
+#: src/gui_frontend/app_list_view/bulk_actions.rs:241
 msgid "Failed to unlock achievements for the following apps:"
 msgstr "Échec du déverrouillage des succès pour les applications suivantes :"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:325
-#: src/gui_frontend/app_list_view/bulk_actions.rs:352
+#: src/gui_frontend/app_list_view/bulk_actions.rs:323
+#: src/gui_frontend/app_list_view/bulk_actions.rs:350
 msgid "Locking {done} / {total} app(s)…"
 msgstr "Verrouillage {done} / {total} application(s)…"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:377
+#: src/gui_frontend/app_list_view/bulk_actions.rs:375
 msgid "every achievement and stat reset"
 msgstr "tous les succès et statistiques réinitialisés"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:416
+#: src/gui_frontend/app_list_view/bulk_actions.rs:414
 msgid "Reset incomplete"
 msgstr "Réinitialisation incomplète"
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:417
+#: src/gui_frontend/app_list_view/bulk_actions.rs:415
 msgid "The following apps were left as they were:"
 msgstr "Les jeux suivants n'ont pas été touchés :"
 
@@ -1175,17 +1189,17 @@ msgstr ""
 msgid "Import complete"
 msgstr "Importation terminée"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:114
+#: src/gui_frontend/app_list_view/refresh_actions.rs:118
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 "Aucune application trouvée sur votre compte. Recherchez un App Id pour "
 "commencer."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:131
+#: src/gui_frontend/app_list_view/refresh_actions.rs:135
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr "Aucun résultat. Vérifiez l'orthographe ou essayez de saisir un App Id."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:163
+#: src/gui_frontend/app_list_view/refresh_actions.rs:145
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
@@ -1193,17 +1207,17 @@ msgstr ""
 "Échec du chargement de la bibliothèque. Vérifiez votre connexion Internet. "
 "Recherchez un App Id pour commencer."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:453
+#: src/gui_frontend/app_list_view/refresh_actions.rs:431
 msgid "Reset Everything"
 msgstr "Tout réinitialiser"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:454
+#: src/gui_frontend/app_list_view/refresh_actions.rs:432
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
 "Cela réinitialisera tous les succès et statistiques de cette application. "
 "Êtes-vous sûr ?"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:455
+#: src/gui_frontend/app_list_view/refresh_actions.rs:433
 msgid "Sure, reset"
 msgstr "Oui, réinitialiser"
 

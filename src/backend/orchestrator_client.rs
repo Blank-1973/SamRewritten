@@ -176,7 +176,9 @@ request!(GetSubscribedAppList { include_playtime: bool, with_achievement_counts:
     -> Vec<AppModel>
     => SteamCommand::GetSubscribedAppList(include_playtime, with_achievement_counts));
 
-request!(LaunchApp { app_id: u32 } -> bool => SteamCommand::LaunchApp(app_id));
+request!(SetStealthMode { on: bool } -> bool => SteamCommand::SetStealthMode(on));
+
+request!(LaunchApp { app_id: u32, idle: bool } -> bool => SteamCommand::LaunchApp(app_id, idle));
 request!(StopApp { app_id: u32 } -> bool => SteamCommand::StopApp(app_id));
 
 request!(SetAchievement { app_id: u32, achievement_id: String, unlocked: bool, store: bool }

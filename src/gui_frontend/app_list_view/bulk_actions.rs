@@ -15,7 +15,9 @@
 
 use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
+use crate::gui_frontend::application_actions::{
+    set_bulk_actions_enabled, set_selection_actions_enabled,
+};
 use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::i18n::{tr, tr_noop};
@@ -62,9 +64,7 @@ pub fn create_bulk_actions(
             if let Some(selection_model) = grid_view.model() {
                 selection_model.select_all();
                 let has_selection = !selection_model.selection().is_empty();
-                set_app_action_enabled(&application, "unlock_all_apps", has_selection);
-                set_app_action_enabled(&application, "lock_all_apps", has_selection);
-                set_app_action_enabled(&application, "export_selected_progress", has_selection);
+                set_selection_actions_enabled(&application, has_selection);
             }
         }
     ));
@@ -78,9 +78,7 @@ pub fn create_bulk_actions(
         move |_, _| {
             if let Some(selection_model) = grid_view.model() {
                 selection_model.unselect_all();
-                set_app_action_enabled(&application, "unlock_all_apps", false);
-                set_app_action_enabled(&application, "lock_all_apps", false);
-                set_app_action_enabled(&application, "export_selected_progress", false);
+                set_selection_actions_enabled(&application, false);
             }
         }
     ));

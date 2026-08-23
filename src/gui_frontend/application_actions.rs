@@ -111,6 +111,12 @@ pub fn set_timed_unlock_actions_enabled(application: &MainApplication, enabled: 
     set_app_action_enabled(application, "achievement-language", enabled);
 }
 
+pub fn set_selection_actions_enabled(application: &MainApplication, enabled: bool) {
+    set_app_action_enabled(application, "unlock_all_apps", enabled);
+    set_app_action_enabled(application, "lock_all_apps", enabled);
+    set_app_action_enabled(application, "export_selected_progress", enabled);
+}
+
 pub fn set_bulk_actions_enabled(application: &MainApplication, enabled: bool) {
     set_app_action_enabled(application, "unlock_all_apps", enabled);
     set_app_action_enabled(application, "lock_all_apps", enabled);

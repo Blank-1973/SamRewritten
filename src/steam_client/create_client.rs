@@ -18,7 +18,7 @@ use crate::steam_client::client_engine_wrapper::ClientEngine;
 use crate::steam_client::steam_client_vtable::{ISteamClient, STEAMCLIENT_INTERFACE_VERSION};
 use crate::steam_client::steam_client_wrapper::SteamClient;
 use crate::steam_client::steamworks_types::{
-    CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn,
+    CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetAPICallResultFn, SteamGetCallbackFn,
 };
 use crate::utils::ipc_types::SamError;
 use crate::utils::steam_locator::SteamLocator;
@@ -154,6 +154,14 @@ pub fn create_client_engine(silent: bool) -> Result<ClientEngine, Box<dyn std::e
             return Err(Box::from("IClientEngine creation returned NULL"));
         }
         Ok(ClientEngine::from_raw(engine))
+    }
+}
+
+pub fn api_call_result_fetcher() -> Option<SteamGetAPICallResultFn> {
+    let lib = STEAM_CLIENT_LIB.get()?;
+    unsafe {
+        let get: Symbol<SteamGetAPICallResultFn> = lib.get(b"Steam_GetAPICallResult").ok()?;
+        Some(*get)
     }
 }
 

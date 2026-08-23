@@ -18,12 +18,12 @@
 // instance serves any app id without the process being registered as
 // running it.
 //
-// For a regular Steam app, `CGameID` is just the u32 app id zero-extended
-// (type=App=0, mod_id=0).
+// Slot names are ground truth: each stub in steamclient.so serialises its own
+// method name for the IPC dispatch. Not settled by the names: which half of
+// an overloaded pair is which. `*const c_void` is never called.
 
-use std::os::raw::c_void;
-
-pub type CGameID = u64;
+use crate::steam_client::steamworks_types::{CGameID, CSteamID, SteamAPICall_t};
+use std::os::raw::{c_char, c_void};
 
 #[repr(C)]
 pub struct IClientUserStatsMap {
@@ -33,46 +33,121 @@ pub struct IClientUserStatsMap {
 #[repr(C)]
 pub struct IClientUserStatsMapVTable {
     pub get_num_stats: unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID) -> u32,
-    pub _vt1_get_stat_name: *const c_void,
-    pub _vt2_get_stat_type: *const c_void,
+    pub get_stat_name: *const c_void,
+    pub get_stat_type: *const c_void,
     pub get_num_achievements: unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID) -> u32,
-    pub _vt4_get_achievement_name: *const c_void,
+    pub get_achievement_name: *const c_void,
     pub request_current_stats:
         unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID) -> bool,
-    pub _vt6: *const c_void,
-    pub _vt7: *const c_void,
-    pub _vt8: *const c_void,
-    pub _vt9: *const c_void,
-    pub _vt10: *const c_void,
-    pub _vt11: *const c_void,
-    pub _vt12_get_achievement: *const c_void,
-    pub _vt13: *const c_void,
-    pub _vt14: *const c_void,
-    pub _vt15: *const c_void,
-    pub _vt16: *const c_void,
-    pub _vt17: *const c_void,
-    pub _vt18: *const c_void,
-    pub _vt19: *const c_void,
-    pub _vt20: *const c_void,
-    pub _vt21: *const c_void,
-    pub _vt22: *const c_void,
-    pub _vt23: *const c_void,
-    pub _vt24: *const c_void,
-    pub _vt25: *const c_void,
-    pub _vt26: *const c_void,
-    pub _vt27: *const c_void,
-    pub _vt28: *const c_void,
-    pub _vt29: *const c_void,
-    pub _vt30: *const c_void,
-    pub _vt31: *const c_void,
-    pub _vt32: *const c_void,
-    pub _vt33: *const c_void,
-    pub _vt34: *const c_void,
-    pub _vt35: *const c_void,
-    pub _vt36: *const c_void,
-    pub _vt37: *const c_void,
-    pub _vt38: *const c_void,
-    pub _vt39: *const c_void,
+    pub deprecated_public_request_current_stats: *const c_void,
+    // MSVC reverses overload order, so these two pairs swap on Windows.
+    #[cfg(target_os = "windows")]
+    pub get_stat_f32: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        *const CGameID,
+        *const c_char,
+        *mut f32,
+    ) -> bool,
+    #[cfg(target_os = "windows")]
+    pub get_stat_i32: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        *const CGameID,
+        *const c_char,
+        *mut i32,
+    ) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub get_stat_i32: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        *const CGameID,
+        *const c_char,
+        *mut i32,
+    ) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub get_stat_f32: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        *const CGameID,
+        *const c_char,
+        *mut f32,
+    ) -> bool,
+    #[cfg(target_os = "windows")]
+    pub set_stat_f32:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, *const c_char, f32) -> bool,
+    #[cfg(target_os = "windows")]
+    pub set_stat_i32:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, *const c_char, i32) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub set_stat_i32:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, *const c_char, i32) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub set_stat_f32:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, *const c_char, f32) -> bool,
+    pub update_avg_rate_stat: *const c_void,
+    pub get_achievement: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        *const CGameID,
+        *const c_char,
+        *mut bool,
+        *mut u32,
+    ) -> bool,
+    pub set_achievement:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, *const c_char) -> bool,
+    pub clear_achievement:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, *const c_char) -> bool,
+    pub get_achievement_progress: *const c_void,
+    pub store_stats: unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID) -> bool,
+    pub get_achievement_icon: *const c_void,
+    pub bget_achievement_icon_url: *const c_void,
+    pub get_achievement_display_attribute: *const c_void,
+    pub indicate_achievement_progress: *const c_void,
+    pub set_max_stats_loaded: *const c_void,
+    // Slots 22-26 take the user id by value and the game id by reference.
+    pub request_user_stats:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, CSteamID, *const CGameID) -> SteamAPICall_t,
+    pub get_user_stat_i32: *const c_void,
+    pub get_user_stat_f32: *const c_void,
+    pub get_user_achievement: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        CSteamID,
+        *const CGameID,
+        *const c_char,
+        *mut bool,
+        *mut u32,
+    ) -> bool,
+    pub get_user_achievement_progress: *const c_void,
+    pub reset_all_stats:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID, bool) -> bool,
+    pub find_or_create_leaderboard: *const c_void,
+    pub find_leaderboard: *const c_void,
+    pub get_leaderboard_name: *const c_void,
+    pub get_leaderboard_entry_count: *const c_void,
+    pub get_leaderboard_sort_method: *const c_void,
+    pub get_leaderboard_display_type: *const c_void,
+    pub download_leaderboard_entries: *const c_void,
+    pub download_leaderboard_entries_for_users: *const c_void,
+    pub get_downloaded_leaderboard_entry: *const c_void,
+    pub attach_leaderboard_ugc: *const c_void,
+    pub upload_leaderboard_score: *const c_void,
+    pub get_number_of_current_players: *const c_void,
     pub get_num_achieved_achievements:
         unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID) -> u32,
+    pub get_last_achievement_unlocked: *const c_void,
+    pub get_most_recent_achievement_unlocked: *const c_void,
+    pub request_global_achievement_percentages:
+        unsafe extern "C" fn(*mut IClientUserStatsMap, *const CGameID) -> SteamAPICall_t,
+    pub get_most_achieved_achievement_info: *const c_void,
+    pub get_next_most_achieved_achievement_info: *const c_void,
+    pub get_achievement_achieved_percent: unsafe extern "C" fn(
+        *mut IClientUserStatsMap,
+        *const CGameID,
+        *const c_char,
+        *mut f32,
+    ) -> bool,
+    pub request_global_stats: *const c_void,
+    pub get_global_stat_i64: *const c_void,
+    pub get_global_stat_f64: *const c_void,
+    pub get_global_stat_history_i64: *const c_void,
+    pub get_global_stat_history_f64: *const c_void,
+    pub get_achievement_progress_limits_i32: *const c_void,
+    pub get_achievement_progress_limits_f32: *const c_void,
+    pub bachievement_icon_loaded: *const c_void,
 }

@@ -1,0 +1,39 @@
+name: check
+run-name: Format, lint, build and test
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup component add rustfmt clippy
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install GTK dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets
+
+      - name: Build check (Adwaita)
+        run: cargo check --features adwaita
+
+      - name: Build check (CLI)
+        run: cargo check --no-default-features --features cli
+
+      # backend::tests drives a live Steam client, which no runner has.
+      - name: Test
+        run: cargo test -- --skip backend::tests

@@ -100,7 +100,9 @@ pub enum SteamCommand {
     /// is true, each returned `AppModel` will have `achievement_count` and
     /// `unlocked_achievement_count` populated for apps whose schema is cached locally.
     GetSubscribedAppList(bool, bool),
-    LaunchApp(u32),
+    SetStealthMode(bool),
+    /// `(app_id, idle)`. An idling child appears in-game whatever stealth says.
+    LaunchApp(u32, bool),
     StopApp(u32),
     StopApps,
     GetRunningApps,

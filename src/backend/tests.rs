@@ -21,11 +21,19 @@ mod tests {
     use crate::steam_client::steam_apps_001_wrapper::SteamApps001AppDataKeys;
     use std::env;
     use std::path::PathBuf;
+    use std::sync::{Mutex, MutexGuard};
+
+    static STEAM: Mutex<()> = Mutex::new(());
+
+    fn steam_guard() -> MutexGuard<'static, ()> {
+        STEAM.lock().unwrap_or_else(|e| e.into_inner())
+    }
 
     #[test]
     fn get_achievements_with_callback() {
+        let _steam = steam_guard();
         let mut app_manager =
-            AppManager::new_connected(206690).expect("Failed to create app manager");
+            AppManager::new_connected(206690, false).expect("Failed to create app manager");
         let achievements = app_manager
             .get_achievements(true, "")
             .expect("Failed to get achievements");
@@ -34,14 +42,229 @@ mod tests {
 
     #[test]
     fn get_stats_no_message() {
-        let mut app_manager = AppManager::new_connected(480).expect("Failed to create app manager");
+        let _steam = steam_guard();
+        let mut app_manager =
+            AppManager::new_connected(480, false).expect("Failed to create app manager");
         let stats = app_manager.get_statistics("").expect("Failed to get stats");
         println!("{stats:?}")
     }
 
     #[test]
+    fn get_stats_stealth() {
+        let _steam = steam_guard();
+        let mut app_manager =
+            AppManager::new_connected(480, true).expect("Failed to create app manager");
+        let stats = app_manager.get_statistics("").expect("Failed to get stats");
+        println!("{stats:?}")
+    }
+
+    #[test]
+    fn get_global_percentages_stealth() {
+        let _steam = steam_guard();
+        let mut app_manager =
+            AppManager::new_connected(206690, true).expect("Failed to create app manager");
+        let achievements = app_manager
+            .get_achievements(true, "")
+            .expect("Failed to get achievements");
+        let with_percent: Vec<_> = achievements
+            .iter()
+            .filter_map(|a| a.global_achieved_percent.map(|p| (a.id.clone(), p)))
+            .collect();
+        println!(
+            "{} of {} achievements carry a global percentage",
+            with_percent.len(),
+            achievements.len()
+        );
+        for (id, percent) in with_percent.iter().take(10) {
+            println!("  {id}: {percent:.2}%");
+        }
+        assert!(
+            !with_percent.is_empty(),
+            "no global percentages came back in stealth mode"
+        );
+    }
+
+    #[test]
+    fn stealth_unlock_roundtrip() {
+        let _steam = steam_guard();
+        const ACHIEVEMENT: &str = "ACH_WIN_ONE_GAME";
+        let mut app_manager =
+            AppManager::new_connected(480, true).expect("Failed to create app manager");
+
+        let before = app_manager
+            .get_achievements(false, "")
+            .expect("Failed to get achievements");
+        let start = before
+            .iter()
+            .find(|a| a.id == ACHIEVEMENT)
+            .unwrap_or_else(|| panic!("{ACHIEVEMENT} not in Spacewar's schema"));
+        println!(
+            "before: achieved={} at {:?}",
+            start.is_achieved, start.unlock_time
+        );
+
+        assert!(
+            app_manager
+                .set_achievement(ACHIEVEMENT, true, true)
+                .expect("unlock failed"),
+            "unlock did not store"
+        );
+
+        let unlocked = app_manager
+            .get_achievements(false, "")
+            .expect("Failed to re-read achievements");
+        let after = unlocked.iter().find(|a| a.id == ACHIEVEMENT).unwrap();
+        println!(
+            "after unlock: achieved={} at {:?}",
+            after.is_achieved, after.unlock_time
+        );
+        assert!(
+            after.is_achieved,
+            "achievement did not read back as unlocked"
+        );
+
+        assert!(
+            app_manager
+                .set_achievement(ACHIEVEMENT, false, true)
+                .expect("relock failed"),
+            "relock did not store"
+        );
+
+        let relocked = app_manager
+            .get_achievements(false, "")
+            .expect("Failed to re-read achievements");
+        let end = relocked.iter().find(|a| a.id == ACHIEVEMENT).unwrap();
+        println!("after relock: achieved={}", end.is_achieved);
+        assert!(
+            !end.is_achieved,
+            "achievement did not read back as relocked"
+        );
+    }
+
+    #[test]
+    fn stealth_reads_a_users_achievements() {
+        let _steam = steam_guard();
+        use crate::backend::stats_access::{StatsAccess, Stealth};
+        use crate::backend::user_unlock_times::read_schema_achievements;
+        use std::rc::Rc;
+
+        const APP: u32 = 206690;
+
+        let steam = Rc::new(ConnectedSteam::new(true).expect("Failed to connect to Steam"));
+        let me = steam
+            .user
+            .get_steam_id()
+            .expect("Failed to read the SteamID");
+        let stealth = Stealth::new(steam, APP).expect("Failed to open IClientUserStats");
+
+        stealth.prime().expect("Failed to load our own stats");
+
+        let probe = read_schema_achievements(APP).expect("Failed to read the schema");
+        let (probe_name, _) = probe
+            .first()
+            .expect("no achievements in the schema")
+            .clone();
+        let was_achieved = stealth
+            .get_achievement_and_unlock_time(&probe_name)
+            .expect("probe achievement unreadable")
+            .0;
+        if !was_achieved {
+            stealth.set_achievement(&probe_name).expect("unlock failed");
+            assert!(
+                stealth.store_stats().expect("store failed"),
+                "store refused"
+            );
+        }
+
+        stealth
+            .request_other_user_stats(me)
+            .expect("RequestUserStats refused our own SteamID");
+
+        let names = read_schema_achievements(APP).expect("Failed to read the schema");
+        assert!(!names.is_empty(), "no achievements in the schema for {APP}");
+
+        let mut unlocked = 0;
+        for (api_name, _) in &names {
+            let own = stealth
+                .get_achievement_and_unlock_time(api_name)
+                .unwrap_or_else(|e| panic!("{api_name} unreadable as our own: {e:?}"));
+            let as_other = stealth
+                .get_other_user_achievement(me, api_name)
+                .unwrap_or_else(|| panic!("{api_name} unreadable as another user"));
+            assert_eq!(own, as_other, "{api_name} disagrees between the two paths");
+            if own.0 {
+                assert_ne!(own.1, 0, "{api_name} is unlocked with no timestamp");
+                unlocked += 1;
+            }
+        }
+        assert!(
+            unlocked > 0,
+            "nothing unlocked, so no timestamp was compared"
+        );
+        println!(
+            "{} achievements agree, {unlocked} of them unlocked",
+            names.len()
+        );
+
+        if !was_achieved {
+            stealth
+                .clear_achievement(&probe_name)
+                .expect("relock failed");
+            assert!(
+                stealth.store_stats().expect("store failed"),
+                "store refused"
+            );
+        }
+    }
+
+    #[test]
+    fn stealth_stat_roundtrip() {
+        let _steam = steam_guard();
+        let mut app_manager =
+            AppManager::new_connected(480, true).expect("Failed to create app manager");
+        app_manager
+            .get_statistics("")
+            .expect("Failed to load stat definitions");
+
+        let before = app_manager.read_float_stat_state("AverageSpeed").current;
+        assert!(
+            app_manager
+                .set_stat_f32("AverageSpeed", 12.5)
+                .expect("float write failed"),
+            "float write did not store"
+        );
+        assert_eq!(
+            app_manager.read_float_stat_state("AverageSpeed").current,
+            Some(12.5),
+            "AverageSpeed did not read back as written"
+        );
+
+        let games = app_manager
+            .read_int_stat_state("NumGames")
+            .current
+            .expect("NumGames unreadable");
+        assert!(
+            app_manager
+                .set_stat_i32("NumGames", games + 1)
+                .expect("int write failed"),
+            "int write did not store"
+        );
+        assert_eq!(
+            app_manager.read_int_stat_state("NumGames").current,
+            Some(games + 1),
+            "NumGames did not read back as written"
+        );
+
+        if let Some(before) = before {
+            let _ = app_manager.set_stat_f32("AverageSpeed", before);
+        }
+    }
+
+    #[test]
     fn reset_stats_no_message() {
-        let app_manager = AppManager::new_connected(480).expect("Failed to create app manager");
+        let _steam = steam_guard();
+        let app_manager =
+            AppManager::new_connected(480, false).expect("Failed to create app manager");
         let success = app_manager
             .reset_all_stats(true)
             .expect("Failed to get stats");
@@ -50,6 +273,7 @@ mod tests {
 
     #[test]
     fn brute_force_app001_keys() {
+        let _steam = steam_guard();
         // ISteamApps001::GetAppData does not read a file in this process. It is
         // an IPC shim: the call is marshalled over the Steam pipe to the running
         // Steam client, which answers from its in-memory appinfo (the `common`

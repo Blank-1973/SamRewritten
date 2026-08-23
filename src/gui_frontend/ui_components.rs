@@ -211,6 +211,13 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu, with_bulk: bool) {
         Some("app.import_progress"),
     );
 
+    let behaviour_section = gtk::gio::Menu::new();
+    behaviour_section.append(
+        Some(tr("Appear in-game while managing").as_str()),
+        Some("app.appear-in-game"),
+    );
+    menu_model.append_section(None, &behaviour_section);
+
     menu_model.append(
         Some(tr("Refresh app list").as_str()),
         Some("app.refresh_app_list"),

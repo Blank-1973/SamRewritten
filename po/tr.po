@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 01:06+0200\n"
+"POT-Creation-Date: 2026-08-30 23:21+0200\n"
 "PO-Revision-Date: 2026-08-26 11:12+0000\n"
 "Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
@@ -20,7 +20,7 @@ msgstr ""
 "X-Generator: Weblate 2026.9.dev0\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:330
+#: src/gui_frontend/app_list_view/mod.rs:380
 msgid "Loading..."
 msgstr "Yükleniyor..."
 
@@ -49,67 +49,71 @@ msgstr "Seçilen uygulamaların ilerlemesini dışa aktar"
 msgid "Import progress..."
 msgstr "İlerlemeyi içe aktar..."
 
-#: src/gui_frontend/ui_components.rs:215
+#: src/gui_frontend/ui_components.rs:216
+msgid "Appear in-game while managing"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:222
 msgid "Refresh app list"
 msgstr "Uygulama listesini yenile"
 
-#: src/gui_frontend/ui_components.rs:219
+#: src/gui_frontend/ui_components.rs:226
 msgid "Refresh achievement counts"
 msgstr "Başarım sayılarını yenile"
 
-#: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
+#: src/gui_frontend/ui_components.rs:229 src/gui_frontend/ui_components.rs:413
 msgid "About"
 msgstr "Hakkında"
 
-#: src/gui_frontend/ui_components.rs:226
+#: src/gui_frontend/ui_components.rs:233
 msgid "Change Steam folder…"
 msgstr "Steam klasörünü değiştir…"
 
-#: src/gui_frontend/ui_components.rs:233
+#: src/gui_frontend/ui_components.rs:240
 msgid "Bulk process"
 msgstr "Toplu işlem"
 
-#: src/gui_frontend/ui_components.rs:239
+#: src/gui_frontend/ui_components.rs:246
 msgid "System"
 msgstr "Sistem"
 
-#: src/gui_frontend/ui_components.rs:240
+#: src/gui_frontend/ui_components.rs:247
 msgid "Light"
 msgstr "Açık"
 
-#: src/gui_frontend/ui_components.rs:241
+#: src/gui_frontend/ui_components.rs:248
 msgid "Dark"
 msgstr "Karanlık"
 
-#: src/gui_frontend/ui_components.rs:250
+#: src/gui_frontend/ui_components.rs:257
 msgid "Disable animations"
 msgstr "Animasyonları kapat"
 
-#: src/gui_frontend/ui_components.rs:254
+#: src/gui_frontend/ui_components.rs:261
 msgid "Appearance"
 msgstr "Görünüm"
 
-#: src/gui_frontend/ui_components.rs:260
+#: src/gui_frontend/ui_components.rs:267
 msgid "System default"
 msgstr "Sistem Varsayılanı"
 
-#: src/gui_frontend/ui_components.rs:263
+#: src/gui_frontend/ui_components.rs:270
 msgid "Language"
 msgstr "Dil"
 
-#: src/gui_frontend/ui_components.rs:380
+#: src/gui_frontend/ui_components.rs:387
 msgid "Game default"
 msgstr "Oyun varsayılanı"
 
-#: src/gui_frontend/ui_components.rs:399
+#: src/gui_frontend/ui_components.rs:406
 msgid "Refresh achievements & stats"
 msgstr "Başarımları ve istatistikleri yenile"
 
-#: src/gui_frontend/ui_components.rs:403
+#: src/gui_frontend/ui_components.rs:410
 msgid "Reset everything"
 msgstr "Herşeyi sıfırla"
 
-#: src/gui_frontend/ui_components.rs:411
+#: src/gui_frontend/ui_components.rs:418
 msgid "Achievement language"
 msgstr "Başarım dili"
 
@@ -121,9 +125,9 @@ msgid "OK"
 msgstr "OK"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
-#: src/gui_frontend/profile_view/mod.rs:599
+#: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:455
+#: src/gui_frontend/app_list_view/refresh_actions.rs:433
 msgid "Cancel"
 msgstr "İptal"
 
@@ -445,26 +449,36 @@ msgstr "Arkadaşlarda ara veya SteamID64 yapıştır"
 msgid "Clear selected user"
 msgstr "Seçili kullanıcıyı kaldır"
 
-#: src/gui_frontend/app_list_view/mod.rs:351
+#: src/gui_frontend/app_list_view/mod.rs:401
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr "SamRewritten Steam'a bağlanamadı. Steam açık mı?"
 
-#: src/gui_frontend/app_list_view/mod.rs:356
+#: src/gui_frontend/app_list_view/mod.rs:406
 msgid "Try again"
 msgstr "Tekrar deneyin"
 
-#: src/gui_frontend/app_list_view/mod.rs:373
-#: src/gui_frontend/app_list_view/mod.rs:1476
+#: src/gui_frontend/app_list_view/mod.rs:423
+#: src/gui_frontend/app_list_view/mod.rs:1605
 msgid "Name or AppId (Ctrl+K)"
 msgstr "İsim veya AppId (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:389
+#: src/gui_frontend/app_list_view/mod.rs:439
 msgid "Show or hide the sidebar"
 msgstr "Yan paneli göster/gizle"
 
-#: src/gui_frontend/app_list_view/mod.rs:1471
+#: src/gui_frontend/app_list_view/mod.rs:1600
 msgid "Achievement or stat..."
 msgstr "Başarım veya istatistik..."
+
+#: src/gui_frontend/app_list_view/mod.rs:1719
+#: src/gui_frontend/app_list_view/settings_bindings.rs:265
+msgid "Could not change the in-game setting"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/mod.rs:1721
+#: src/gui_frontend/app_list_view/settings_bindings.rs:266
+msgid "The change could not be applied. Restart SamRewritten and try again."
+msgstr ""
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
@@ -519,7 +533,7 @@ msgid "View profile"
 msgstr "Profili görüntüle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:208
-#: src/gui_frontend/profile_view/mod.rs:481
+#: src/gui_frontend/profile_view/mod.rs:484
 msgid "Steam user"
 msgstr "Steam kullanıcısı"
 
@@ -583,58 +597,58 @@ msgstr "Bu oyundaki diğer başarımlar farklı zamanlarda açıldı"
 msgid "at the very start of this game's history, ordinary unlocks after it"
 msgstr "Bu oyun geçmişinin en başında, sonrasında normal açılan başarımlar var"
 
-#: src/gui_frontend/profile_view/mod.rs:266
-#: src/gui_frontend/profile_view/mod.rs:290
+#: src/gui_frontend/profile_view/mod.rs:264
+#: src/gui_frontend/profile_view/mod.rs:288
 msgid "No unlocks yet."
 msgstr "Henüz açılan başarım yok."
 
-#: src/gui_frontend/profile_view/mod.rs:294
+#: src/gui_frontend/profile_view/mod.rs:292
 msgid "{total} unlocked since {since}."
 msgstr "{since} tarihinden bu yana {total} başarım açıldı."
 
-#: src/gui_frontend/profile_view/mod.rs:298
+#: src/gui_frontend/profile_view/mod.rs:296
 msgid "{year} in the last year, {total} since {since}."
 msgstr ""
 "Son bir yılda {year}, {since} tarihinden bu yana toplam {total} başarım "
 "açıldı."
 
-#: src/gui_frontend/profile_view/mod.rs:303
+#: src/gui_frontend/profile_view/mod.rs:301
 msgid "{count} in {year}, {total} since {since}."
 msgstr "{year} yılında {count}, {since} itibarıyla {total} başarım."
 
-#: src/gui_frontend/profile_view/mod.rs:559
+#: src/gui_frontend/profile_view/mod.rs:563
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
 msgstr ""
 "Başka bir bilgisayarda Steam kullanıyorsanız daha güncel bilgiler için "
 "yeniden tarayın."
 
-#: src/gui_frontend/profile_view/mod.rs:572
-#: src/gui_frontend/profile_view/mod.rs:898
+#: src/gui_frontend/profile_view/mod.rs:576
+#: src/gui_frontend/profile_view/mod.rs:905
 msgid "Read all my games"
 msgstr "Bütün oyunları tara"
 
-#: src/gui_frontend/profile_view/mod.rs:642
+#: src/gui_frontend/profile_view/mod.rs:647
 msgid "Year to show"
 msgstr "Gösterilen yıl"
 
-#: src/gui_frontend/profile_view/mod.rs:657
+#: src/gui_frontend/profile_view/mod.rs:662
 msgid "Everything here looks like ordinary play."
 msgstr "Buradaki her şey normal oynanışa benziyor."
 
-#: src/gui_frontend/profile_view/mod.rs:701
+#: src/gui_frontend/profile_view/mod.rs:706
 msgid "Unlock activity"
 msgstr "Başarım aktivitesi"
 
-#: src/gui_frontend/profile_view/mod.rs:719
+#: src/gui_frontend/profile_view/mod.rs:724
 msgid "Completion over time"
 msgstr "Zamanla tamamlanma"
 
-#: src/gui_frontend/profile_view/mod.rs:725
+#: src/gui_frontend/profile_view/mod.rs:730
 msgid "Irregular activity history"
 msgstr "Sıradışı aktivite geçmişi"
 
-#: src/gui_frontend/profile_view/mod.rs:728
+#: src/gui_frontend/profile_view/mod.rs:733
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
@@ -642,15 +656,15 @@ msgstr ""
 "Steam profilinizi ziyaret eden herkes başarımlarınızın ne zaman açıldığını "
 "görebilir. Bu listede normal oynanışa uymayan anlar gösterilmiştir."
 
-#: src/gui_frontend/profile_view/mod.rs:869
+#: src/gui_frontend/profile_view/mod.rs:880
 msgid "{hours} h"
 msgstr "{hours} sa"
 
-#: src/gui_frontend/profile_view/mod.rs:896
+#: src/gui_frontend/profile_view/mod.rs:903
 msgid "Rescan now"
 msgstr "Yeniden tara"
 
-#: src/gui_frontend/profile_view/mod.rs:911
+#: src/gui_frontend/profile_view/mod.rs:919
 msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
@@ -658,7 +672,7 @@ msgstr ""
 "Oyunlarınızın başarımları taranıyor ({measured}/{total}). Aşağıdaki aktivite "
 "ve oturumlar işlem ilerledikçe dolacaktır."
 
-#: src/gui_frontend/profile_view/mod.rs:915
+#: src/gui_frontend/profile_view/mod.rs:923
 msgid ""
 "Only {measured} of your {total} games have been read from Steam, so the "
 "figures above cannot be totalled yet."
@@ -666,24 +680,24 @@ msgstr ""
 "{total} oyundan sadece {measured} tanesi tarandı, bu nedenle yukarıdaki "
 "veriler henüz toplanamıyor."
 
-#: src/gui_frontend/profile_view/mod.rs:933
+#: src/gui_frontend/profile_view/mod.rs:963
 msgid "Waiting for Steam to say who is signed in."
 msgstr "Giriş yapan hesabın belirlenmesi için Steam bekleniyor."
 
-#: src/gui_frontend/profile_view/mod.rs:941
+#: src/gui_frontend/profile_view/mod.rs:971
 msgid "Reading your unlock history…"
 msgstr "Başarım açma geçmişiniz taranıyor…"
 
-#: src/gui_frontend/profile_view/mod.rs:995
-#: src/gui_frontend/profile_view/mod.rs:1000
+#: src/gui_frontend/profile_view/mod.rs:1027
+#: src/gui_frontend/profile_view/mod.rs:1032
 msgid "Your unlock history could not be read."
 msgstr "Başarım açma geçmişiniz taranılamadı."
 
-#: src/gui_frontend/profile_view/mod.rs:1088
+#: src/gui_frontend/profile_view/mod.rs:1138
 msgid "No completion to plot yet."
 msgstr "Henüz grafikte gösterilebilecek bir tamamlanma bulunmuyor."
 
-#: src/gui_frontend/profile_view/mod.rs:1090
+#: src/gui_frontend/profile_view/mod.rs:1140
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
@@ -691,7 +705,7 @@ msgstr ""
 "Başladığınız oyunların ortalamasıdır; bu nedenle yeni bir oyuna "
 "başladığınızda düşer. Şu an %{percent}."
 
-#: src/gui_frontend/profile_view/mod.rs:1099
+#: src/gui_frontend/profile_view/mod.rs:1149
 msgid ""
 "The activity below is missing {count} game(s). Restart Steam to get them "
 "back."
@@ -699,19 +713,19 @@ msgstr ""
 "Aşağıdaki aktivitede {count} oyun eksik. Bunları geri getirmek için Steam'i "
 "yeniden başlatın."
 
-#: src/gui_frontend/profile_view/mod.rs:1118
+#: src/gui_frontend/profile_view/mod.rs:1168
 msgid "Select these {games} games"
 msgstr "Bu {games} oyunu seç"
 
-#: src/gui_frontend/profile_view/mod.rs:1136
+#: src/gui_frontend/profile_view/mod.rs:1186
 msgid "{count} achievements across {games} games"
 msgstr "{games} oyunda toplam {count} başarım"
 
-#: src/gui_frontend/profile_view/mod.rs:1139
+#: src/gui_frontend/profile_view/mod.rs:1189
 msgid "{when} — one game after another, in a single sitting"
 msgstr "{when} — tek oturuşta, iki oyun peş peşe"
 
-#: src/gui_frontend/profile_view/mod.rs:1146
+#: src/gui_frontend/profile_view/mod.rs:1196
 #: src/gui_frontend/profile_view/journal_section.rs:251
 #: src/gui_frontend/app_list_view/progress_actions.rs:377
 #: src/gui_frontend/app_list_view/progress_actions.rs:399
@@ -719,39 +733,39 @@ msgstr "{when} — tek oturuşta, iki oyun peş peşe"
 msgid "App {id}"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1154
+#: src/gui_frontend/profile_view/mod.rs:1204
 msgid "Open {app}"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1168
+#: src/gui_frontend/profile_view/mod.rs:1218
 msgid "{when}, all in the same second"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1170
+#: src/gui_frontend/profile_view/mod.rs:1220
 msgid "{when}, inside {span} second(s)"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1175
+#: src/gui_frontend/profile_view/mod.rs:1225
 msgid "{count} achievements in {app}"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1178
+#: src/gui_frontend/profile_view/mod.rs:1228
 msgid "{timing} — {reading}"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1190
+#: src/gui_frontend/profile_view/mod.rs:1240
 msgid "… and {count} more that stand out less."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1208
+#: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1212
+#: src/gui_frontend/profile_view/mod.rs:1261
 msgid "Steam last refreshed these figures on {date}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1215
+#: src/gui_frontend/profile_view/mod.rs:1264
 msgid "How old these figures are is unknown."
 msgstr ""
 
@@ -977,45 +991,45 @@ msgstr ""
 msgid "Undo incomplete"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:134
+#: src/gui_frontend/app_list_view/settings_bindings.rs:138
 msgid "The new language will be applied the next time you start SamRewritten."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:144
+#: src/gui_frontend/app_list_view/settings_bindings.rs:148
 msgid "Language changed"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:152
-#: src/gui_frontend/app_list_view/bulk_actions.rs:176
+#: src/gui_frontend/app_list_view/bulk_actions.rs:150
+#: src/gui_frontend/app_list_view/bulk_actions.rs:174
 msgid "Unlocking {done} / {total} app(s)…"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:209
+#: src/gui_frontend/app_list_view/bulk_actions.rs:207
 msgid "every achievement unlocked"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:242
+#: src/gui_frontend/app_list_view/bulk_actions.rs:240
 msgid "Unlock incomplete"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:243
+#: src/gui_frontend/app_list_view/bulk_actions.rs:241
 msgid "Failed to unlock achievements for the following apps:"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:325
-#: src/gui_frontend/app_list_view/bulk_actions.rs:352
+#: src/gui_frontend/app_list_view/bulk_actions.rs:323
+#: src/gui_frontend/app_list_view/bulk_actions.rs:350
 msgid "Locking {done} / {total} app(s)…"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:377
+#: src/gui_frontend/app_list_view/bulk_actions.rs:375
 msgid "every achievement and stat reset"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:416
+#: src/gui_frontend/app_list_view/bulk_actions.rs:414
 msgid "Reset incomplete"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/bulk_actions.rs:417
+#: src/gui_frontend/app_list_view/bulk_actions.rs:415
 msgid "The following apps were left as they were:"
 msgstr ""
 
@@ -1156,29 +1170,29 @@ msgstr ""
 msgid "Import complete"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:114
+#: src/gui_frontend/app_list_view/refresh_actions.rs:118
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:131
+#: src/gui_frontend/app_list_view/refresh_actions.rs:135
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:163
+#: src/gui_frontend/app_list_view/refresh_actions.rs:145
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:453
+#: src/gui_frontend/app_list_view/refresh_actions.rs:431
 msgid "Reset Everything"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:454
+#: src/gui_frontend/app_list_view/refresh_actions.rs:432
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:455
+#: src/gui_frontend/app_list_view/refresh_actions.rs:433
 msgid "Sure, reset"
 msgstr ""
 

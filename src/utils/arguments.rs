@@ -29,6 +29,7 @@ use std::rc::Rc;
 pub struct CliArguments {
     pub is_orchestrator: bool,
     pub is_app: u32,
+    pub stealth: bool,
     pub rx: Option<Recver>,
     pub tx: Option<Sender>,
 }
@@ -42,6 +43,7 @@ pub fn parse_cli_arguments() -> CliArguments {
     let mut args = CliArguments {
         is_orchestrator: false,
         is_app: 0,
+        stealth: false,
         rx: None,
         tx: None,
     };
@@ -55,6 +57,10 @@ pub fn parse_cli_arguments() -> CliArguments {
         match arg.as_str() {
             "--orchestrator" => {
                 args.is_orchestrator = true;
+                continue;
+            }
+            "--stealth" => {
+                args.stealth = true;
                 continue;
             }
             _ => unsafe {

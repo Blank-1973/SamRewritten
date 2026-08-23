@@ -46,6 +46,7 @@ impl std::error::Error for SteamClientError {}
 
 #[allow(dead_code)]
 pub enum SteamCallbackId {
+    ApiCallCompleted = 703,
     UserStatsReceived = 1101,
     GlobalAchievementPercentagesReady = 1110,
     GlobalStatsReceived = 1112,

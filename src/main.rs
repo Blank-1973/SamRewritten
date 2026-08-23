@@ -63,7 +63,7 @@ fn main() -> std::process::ExitCode {
     if arguments.is_app > 0 {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
-        let exit_code = app(arguments.is_app, &mut tx, &mut rx);
+        let exit_code = app(arguments.is_app, arguments.stealth, &mut tx, &mut rx);
         return std::process::ExitCode::from(exit_code);
     }
 
@@ -92,7 +92,7 @@ fn main() -> gtk::glib::ExitCode {
     if arguments.is_app > 0 {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
-        let exit_code = app(arguments.is_app, &mut tx, &mut rx);
+        let exit_code = app(arguments.is_app, arguments.stealth, &mut tx, &mut rx);
         return gtk::glib::ExitCode::from(exit_code);
     }
 

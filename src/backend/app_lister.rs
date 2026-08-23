@@ -349,9 +349,9 @@ fn take_answers(
     let mut arrived = Vec::new();
     for (app_id, result) in map.drain_user_stats_callbacks() {
         let counts = if result == EResult::k_EResultOK as i32 {
-            let total = map.get_num_achievements(app_id);
+            let total = map.get_num_achievements(app_id).unwrap_or(0);
             let unlocked = if total > 0 {
-                map.get_num_achieved_achievements(app_id)
+                map.get_num_achieved_achievements(app_id).unwrap_or(0)
             } else {
                 0
             };
@@ -384,7 +384,7 @@ pub fn fetch_achievement_counts(
             if answered.contains_key(&app_id) {
                 continue;
             }
-            if map.request_current_stats(app_id) {
+            if map.request_current_stats(app_id).unwrap_or(false) {
                 pending.insert(app_id);
             } else {
                 dev_println!("APP LISTER", "Steam refused a stats request for {app_id}");

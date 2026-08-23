@@ -46,8 +46,8 @@ fn dispatch<T: Serialize>(
     send_response(tx, &SteamResponse::<T>::from(result));
 }
 
-pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
-    let mut app_manager = AppManager::new_connected(app_id);
+pub fn app(app_id: AppId_t, stealth: bool, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
+    let mut app_manager = AppManager::new_connected(app_id, stealth);
 
     #[cfg(debug_assertions)]
     if app_manager.as_ref().is_err() {

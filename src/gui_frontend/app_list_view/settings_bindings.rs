@@ -16,15 +16,18 @@
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::app_list_view::FilterState;
 use crate::gui_frontend::dialogs::show_message_dialog;
+use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::i18n::{STEAM_LANGUAGES, tr, tr_noop};
+use crate::gui_frontend::request::{Request, SetStealthMode};
 use crate::gui_frontend::widgets::steam_app_card::ANIMATIONS_DISABLED;
-use gtk::gio::{Settings, SimpleAction};
-use gtk::glib::clone;
+use gtk::gio::{Settings, SimpleAction, spawn_blocking};
+use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{CustomFilter, CustomSorter, glib};
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::atomic::Ordering;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 /// Every boolean filter key the sidebar exposes. Kept in sync with `FILTERS` in
 /// `sidebar.rs`, which owns their labels and ordering.
@@ -45,6 +48,7 @@ pub fn setup_settings_bindings(
     filter_state: Rc<FilterState>,
     sort_mode_cache: Rc<RefCell<String>>,
     on_filters_changed: Rc<dyn Fn()>,
+    on_apps_retired: Rc<dyn Fn()>,
 ) {
     // One handler per key rather than one for the lot: a `connect_changed`
     // with no key fires for every setting, including language and theme.
@@ -216,6 +220,53 @@ pub fn setup_settings_bindings(
                 {
                     application.activate_action("refresh_achievements_list", None);
                 }
+            }
+        ),
+    );
+
+    // Pushing can fail before the orchestrator exists; the spawn path resends.
+    application.add_action(&settings.create_action("appear-in-game"));
+    let wanted_stealth = Arc::new(AtomicBool::new(!settings.boolean("appear-in-game")));
+    settings.connect_changed(
+        Some("appear-in-game"),
+        clone!(
+            #[strong]
+            on_apps_retired,
+            #[strong]
+            wanted_stealth,
+            #[weak]
+            application,
+            move |_, _| {
+                wanted_stealth.store(!get_settings().boolean("appear-in-game"), Ordering::Relaxed);
+                let wanted = Arc::clone(&wanted_stealth);
+                let handle = spawn_blocking(move || {
+                    (SetStealthMode {
+                        on: wanted.load(Ordering::Relaxed),
+                    })
+                    .request()
+                });
+                MainContext::default().spawn_local(clone!(
+                    #[strong]
+                    on_apps_retired,
+                    #[weak]
+                    application,
+                    async move {
+                        let failure = match handle.await {
+                            Ok(Ok(_)) => {
+                                on_apps_retired();
+                                return;
+                            }
+                            Ok(Err(e)) => format!("{e:?}"),
+                            Err(e) => format!("{e:?}"),
+                        };
+                        eprintln!("[CLIENT] Could not push the in-game setting: {failure}");
+                        show_message_dialog(
+                            application.active_window().as_ref(),
+                            &tr("Could not change the in-game setting"),
+                            &tr("The change could not be applied. Restart SamRewritten and try again."),
+                        );
+                    }
+                ));
             }
         ),
     );

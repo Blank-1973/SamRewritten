@@ -20,9 +20,11 @@ use crate::backend::local_stats::{LocalIndex, read_schema_languages};
 use crate::backend::orchestrator_client::AppProgress;
 use crate::backend::progress_io::{MAX_CONCURRENT_APPS, run_command_on_apps_concurrent};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
+use crate::backend::stats_access::{
+    app_server_command, idle_app_server_command, set_stealth, stealth,
+};
 use crate::backend::user_unlock_times;
 use crate::dev_println;
-use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
 use crate::utils::ipc_types::{
@@ -35,7 +37,6 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::collections::{HashMap, HashSet};
 use std::io::Write;
-use std::process::Command;
 use std::sync::{LazyLock, Mutex};
 
 /// Forward `command` to the app server and return the framed response bytes
@@ -54,12 +55,20 @@ fn send_raw(tx: &mut Sender, bytes: &[u8]) {
         .expect("[ORCHESTRATOR] Failed to send response");
 }
 
+struct AppChild {
+    ipc: IpcClient,
+    refcount: usize,
+    idling: bool,
+}
+
+type Children = HashMap<u32, AppChild>;
+
 pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     // Lazy: only the app-list and achievement-count commands use the
     // orchestrator's own connection. Per-app commands go to child processes, so
     // a one-shot CLI call that forwards to a child pays for one handshake, not two.
     let mut connected_steam: Option<ConnectedSteam> = None;
-    let mut children_processes: HashMap<u32, (IpcClient, usize)> = HashMap::new();
+    let mut children_processes: Children = HashMap::new();
 
     loop {
         dev_println!("ORCH", "Main loop...");
@@ -68,9 +77,9 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
             Ok(m) => m,
             Err(e) => {
                 eprintln!("[ORCHESTRATOR] Parent pipe error: {e}. Shutting down");
-                for (_, (ipc, _)) in children_processes.iter_mut() {
-                    let _ = send_app_command(ipc, SteamCommand::Shutdown);
-                    let _ = ipc.wait();
+                for child in children_processes.values_mut() {
+                    let _ = send_app_command(&mut child.ipc, SteamCommand::Shutdown);
+                    let _ = child.ipc.wait();
                 }
                 return 1;
             }
@@ -119,24 +128,36 @@ fn orchestrator_connection(slot: &mut Option<ConnectedSteam>) -> Result<&mut Con
     ensure_connected(slot)
 }
 
-fn ensure_app_launched(
-    app_id: u32,
-    children_processes: &mut HashMap<u32, (IpcClient, usize)>,
-) -> Result<(), SamError> {
-    // If a process for this app is already alive, just bump the refcount.
-    if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
-        *refcount += 1;
-        dev_println!("ORCH", "App {} refcount now {}", app_id, *refcount);
-        return Ok(());
-    }
+fn shutdown_all_children(children_processes: &mut Children) {
+    shutdown_children(children_processes, false);
+}
 
-    // Otherwise launch a new process with refcount = 1.
-    let current_exe = get_executable_path();
-    let child =
-        BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}"))).map_err(|e| {
-            eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
-            SamError::SocketCommunicationFailed
-        })?;
+fn shutdown_managed_children(children_processes: &mut Children) {
+    shutdown_children(children_processes, true);
+}
+
+fn shutdown_children(children_processes: &mut Children, keep_idling: bool) {
+    children_processes.retain(|app_id, child| {
+        if keep_idling && child.idling {
+            return true;
+        }
+        let _ = send_app_command(&mut child.ipc, SteamCommand::Shutdown);
+        dev_println!("ORCH", "Sent shutdown command to app {app_id}");
+        let _ = child.ipc.wait();
+        false
+    });
+}
+
+fn spawn_app_child(app_id: u32, idle: bool) -> Result<IpcClient, SamError> {
+    let mut command = if idle {
+        idle_app_server_command(app_id)
+    } else {
+        app_server_command(app_id)
+    };
+    let child = BidirChild::new(&mut command).map_err(|e| {
+        eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
+        SamError::SocketCommunicationFailed
+    })?;
 
     // Probe the child to verify it actually connected to Steam. The app
     // server's connect attempt happens before its main loop runs, so a Status
@@ -144,10 +165,7 @@ fn ensure_app_launched(
     // user-entered AppId they don't own).
     let mut ipc = IpcClient::new(child);
     match ipc.request_response::<bool, _>(&SteamCommand::Status) {
-        Ok(true) => {
-            children_processes.insert(app_id, (ipc, 1));
-            Ok(())
-        }
+        Ok(true) => Ok(ipc),
         Ok(false) | Err(_) => {
             dev_println!(
                 "ORCH",
@@ -158,6 +176,48 @@ fn ensure_app_launched(
             Err(SamError::SteamConnectionFailed)
         }
     }
+}
+
+fn ensure_app_launched(
+    app_id: u32,
+    children_processes: &mut Children,
+    idle: bool,
+) -> Result<(), SamError> {
+    if let Some(child) = children_processes.get_mut(&app_id) {
+        if !idle || child.idling || !stealth() {
+            child.refcount += 1;
+            child.idling |= idle;
+            dev_println!("ORCH", "App {} refcount now {}", app_id, child.refcount);
+            return Ok(());
+        }
+
+        dev_println!("ORCH", "Respawning app {app_id} in-game for idling");
+        let ipc = spawn_app_child(app_id, true)?;
+        let mut old = children_processes.remove(&app_id).unwrap();
+        let _ = send_app_command(&mut old.ipc, SteamCommand::Shutdown);
+        let _ = old.ipc.wait();
+
+        children_processes.insert(
+            app_id,
+            AppChild {
+                ipc,
+                refcount: old.refcount + 1,
+                idling: true,
+            },
+        );
+        return Ok(());
+    }
+
+    let ipc = spawn_app_child(app_id, idle)?;
+    children_processes.insert(
+        app_id,
+        AppChild {
+            ipc,
+            refcount: 1,
+            idling: idle,
+        },
+    );
+    Ok(())
 }
 
 /// Fetch a running child's achievements and stats in a single back-to-back
@@ -189,11 +249,11 @@ fn forward_to_child(
     app_id: u32,
     command: SteamCommand,
     tx: &mut Sender,
-    children_processes: &mut HashMap<u32, (IpcClient, usize)>,
+    children_processes: &mut Children,
     op_name: &str,
 ) {
-    if let Some((ipc, _)) = children_processes.get_mut(&app_id) {
-        match send_app_command(ipc, command) {
+    if let Some(child) = children_processes.get_mut(&app_id) {
+        match send_app_command(&mut child.ipc, command) {
             Ok(response) => send_raw(tx, &response),
             Err(_) => {
                 dev_println!("ORCH", "Failed to {op_name} for app {app_id}");
@@ -251,7 +311,7 @@ fn debug_counts_delay() {
 fn process_command(
     command: SteamCommand,
     tx: &mut Sender,
-    children_processes: &mut HashMap<u32, (IpcClient, usize)>,
+    children_processes: &mut Children,
     connected_steam: &mut Option<ConnectedSteam>,
 ) -> bool {
     /// One-shot: spawn an ephemeral app server, send `command`, then shut it
@@ -259,9 +319,7 @@ fn process_command(
     /// envelope) back to `tx`. Used for commands the user can issue against
     /// apps that aren't currently being held open (unlock-all, reset-stats).
     fn run_ephemeral(tx: &mut Sender, app_id: u32, command: SteamCommand, op_name: &str) {
-        let current_exe = get_executable_path();
-        let child = match BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
-        {
+        let child = match BidirChild::new(&mut app_server_command(app_id)) {
             Ok(c) => c,
             Err(e) => {
                 eprintln!("[ORCHESTRATOR] Failed to spawn app server for {op_name} {app_id}: {e}");
@@ -395,8 +453,8 @@ fn process_command(
             };
         }
 
-        SteamCommand::LaunchApp(app_id) => {
-            dev_println!("ORCH", "LaunchApp {}", app_id);
+        SteamCommand::LaunchApp(app_id, idle) => {
+            dev_println!("ORCH", "LaunchApp {} (idle={idle})", app_id);
 
             #[cfg(debug_assertions)]
             if app_id == 0 {
@@ -404,7 +462,7 @@ fn process_command(
                 return true;
             }
 
-            match ensure_app_launched(app_id, children_processes) {
+            match ensure_app_launched(app_id, children_processes, idle) {
                 Ok(()) => send(tx, &SteamResponse::Success(true)),
                 Err(e) => send(tx, &SteamResponse::<bool>::Error(e)),
             }
@@ -430,14 +488,14 @@ fn process_command(
                 return true;
             }
 
-            if launch && let Err(e) = ensure_app_launched(app_id, children_processes) {
+            if launch && let Err(e) = ensure_app_launched(app_id, children_processes, false) {
                 send(tx, &SteamResponse::<AppProgress>::Error(e));
                 return true;
             }
 
             // One orchestrator command holds the channel for both fetches, so no
             // other command can wedge in between them.
-            let Some((ipc, _)) = children_processes.get_mut(&app_id) else {
+            let Some(child) = children_processes.get_mut(&app_id) else {
                 send(
                     tx,
                     &SteamResponse::<AppProgress>::Error(SamError::AppMismatchError),
@@ -445,7 +503,7 @@ fn process_command(
                 return true;
             };
 
-            match fetch_child_progress(ipc, app_id, &language) {
+            match fetch_child_progress(&mut child.ipc, app_id, &language) {
                 Ok(progress) => send(tx, &SteamResponse::Success(progress)),
                 Err(_) => send_raw(tx, &SOCKET_ERROR_RESPONSE),
             }
@@ -458,28 +516,28 @@ fn process_command(
                 return true;
             }
 
-            let Some((_, refcount)) = children_processes.get_mut(&app_id) else {
-                eprintln!("[ORCHESTRATOR] App {} is not running", app_id);
-                send(tx, &SteamResponse::<()>::Error(SamError::UnknownError));
+            // A mode change retires children behind the frontend's back.
+            let Some(child) = children_processes.get_mut(&app_id) else {
+                dev_println!("ORCH", "App {app_id} is not running");
+                send(tx, &SteamResponse::Success(true));
                 return true;
             };
 
-            *refcount -= 1;
-            if *refcount > 0 {
+            child.refcount -= 1;
+            if child.refcount > 0 {
                 dev_println!(
                     "ORCH",
                     "App {} still wanted, refcount now {}",
                     app_id,
-                    *refcount
+                    child.refcount
                 );
                 send(tx, &SteamResponse::Success(true));
                 return true;
             }
 
             // Refcount hit zero — actually shut the process down.
-            let mut ipc_opt = children_processes.remove(&app_id).map(|(b, _)| b);
-            let ipc = ipc_opt.as_mut().unwrap();
-            let response = match send_app_command(ipc, SteamCommand::Shutdown) {
+            let mut child = children_processes.remove(&app_id).unwrap();
+            let response = match send_app_command(&mut child.ipc, SteamCommand::Shutdown) {
                 Ok(response) => response,
                 Err(_) => {
                     dev_println!("ORCH", "Error sending shutdown command to app {app_id}");
@@ -488,34 +546,32 @@ fn process_command(
                 }
             };
 
-            ipc.wait()
-                .expect("[ORCHESTRATOR] Failed to wait child process");
+            if let Err(e) = child.ipc.wait() {
+                eprintln!("[ORCHESTRATOR] Failed to wait on app {app_id}: {e}");
+            }
 
             send_raw(tx, &response);
+        }
+
+        SteamCommand::SetStealthMode(on) => {
+            dev_println!("ORCH", "SetStealthMode({on})");
+            if stealth() != on {
+                shutdown_managed_children(children_processes);
+                set_stealth(on);
+            }
+            send(tx, &SteamResponse::Success(true));
         }
 
         SteamCommand::StopApps => {
             dev_println!("ORCH", "StopApps");
 
-            for (app_id, (ipc, _)) in children_processes.iter_mut() {
-                let _ = send_app_command(ipc, SteamCommand::Shutdown);
-                dev_println!("ORCH", "Sent shutdown command to app {app_id}");
-                ipc.wait()
-                    .expect("[ORCHESTRATOR] Failed to wait child process");
-            }
-
-            children_processes.clear();
+            shutdown_all_children(children_processes);
 
             send(tx, &SteamResponse::Success(true));
         }
 
         SteamCommand::Shutdown => {
-            for (app_id, (ipc, _)) in children_processes.iter_mut() {
-                let _ = send_app_command(ipc, SteamCommand::Shutdown);
-                dev_println!("ORCH", "Sent shutdown command to app {app_id}");
-                ipc.wait()
-                    .expect("[ORCHESTRATOR] Failed to wait child process");
-            }
+            shutdown_all_children(children_processes);
 
             send(tx, &SteamResponse::Success(true));
             return false;
@@ -526,7 +582,11 @@ fn process_command(
         }
 
         SteamCommand::GetRunningApps => {
-            let running: Vec<u32> = children_processes.keys().copied().collect();
+            let running: Vec<u32> = children_processes
+                .iter()
+                .filter(|(_, child)| child.idling)
+                .map(|(app_id, _)| *app_id)
+                .collect();
             send(tx, &SteamResponse::Success(running));
         }
 

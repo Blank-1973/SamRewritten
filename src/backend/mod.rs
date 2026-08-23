@@ -24,6 +24,7 @@ pub mod orchestrator;
 pub mod orchestrator_client;
 pub mod progress_io;
 pub mod stat_definitions;
+pub mod stats_access;
 mod tests;
 pub mod types;
 pub mod user_unlock_times;

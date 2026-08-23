@@ -28,15 +28,17 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
 use crate::gui_frontend::app_view::create_app_view;
 use crate::gui_frontend::application_actions::{
-    set_app_action_enabled, set_timed_unlock_actions_enabled, setup_app_actions,
+    set_selection_actions_enabled, set_timed_unlock_actions_enabled, setup_app_actions,
 };
-use crate::gui_frontend::dialogs::choose_steam_install_then;
+use crate::gui_frontend::dialogs::{choose_steam_install_then, show_message_dialog};
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::profile_view::build_profile_view;
 use crate::gui_frontend::profile_view::identity::{Identity, SharedIdentity, load_identity};
-use crate::gui_frontend::request::{AppProgress, LaunchApp, Request, StopApp};
+use crate::gui_frontend::request::{
+    AppProgress, GetRunningApps, LaunchApp, Request, SetStealthMode, StopApp,
+};
 use crate::gui_frontend::ui_components::{
     create_context_menu_button, set_context_popover_to_app_list_context,
     set_context_popover_to_profile_context,
@@ -67,7 +69,7 @@ use settings_bindings::setup_settings_bindings;
 use sidebar::{build_sidebar, sort_needs_counts};
 use std::cell::{Cell, RefCell};
 use std::cmp::Ordering;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::process::Command;
 use std::rc::Rc;
 
@@ -218,6 +220,53 @@ pub(super) fn recompute_idle_cap(list_store: &ListStore, idle_count: &Cell<usize
             app.set_can_start_idling(can_start);
         }
     }
+}
+
+thread_local! {
+    static IDLE_PENDING: RefCell<HashMap<u32, usize>> = RefCell::new(HashMap::new());
+}
+
+fn idle_pending(app_id: u32, pending: bool) {
+    IDLE_PENDING.with(|counts| {
+        let mut counts = counts.borrow_mut();
+        if pending {
+            *counts.entry(app_id).or_insert(0) += 1;
+        } else if let Some(count) = counts.get_mut(&app_id) {
+            *count -= 1;
+            if *count == 0 {
+                counts.remove(&app_id);
+            }
+        }
+    });
+}
+
+fn idle_is_pending(app_id: u32) -> bool {
+    IDLE_PENDING.with(|counts| counts.borrow().contains_key(&app_id))
+}
+
+/// The orchestrator retires children on its own, so counting requests desyncs.
+pub(super) fn sync_idle_from_orchestrator(list_store: &ListStore, idle_count: &Rc<Cell<usize>>) {
+    let running = spawn_blocking(|| GetRunningApps.request());
+    MainContext::default().spawn_local(clone!(
+        #[weak]
+        list_store,
+        #[strong]
+        idle_count,
+        async move {
+            let Ok(Ok(running)) = running.await else {
+                return;
+            };
+            let running: HashSet<u32> = running.into_iter().collect();
+            for i in 0..list_store.n_items() {
+                if let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>()
+                    && !idle_is_pending(app.app_id())
+                {
+                    app.set_is_idling(running.contains(&app.app_id()));
+                }
+            }
+            recompute_idle_cap(&list_store, &idle_count);
+        }
+    ));
 }
 
 /// Apply a known delta (+1 / -1) to `idle_count`. Cards' `can_start_idling`
@@ -648,7 +697,7 @@ pub fn create_main_ui(
                 achievement_loader,
                 async move {
                     let counts = handle.await.unwrap_or_default();
-                    crate::dev_println!("APP_LIST", "local files settled {} apps", counts.len());
+                    crate::dev_println!("APPLST", "local files settled {} apps", counts.len());
                     if counts.is_empty() {
                         achievement_loader.release_sweep(&list_store);
                         return;
@@ -848,6 +897,16 @@ pub fn create_main_ui(
         }
     ));
 
+    let on_apps_retired: Rc<dyn Fn()> = Rc::new(clone!(
+        #[weak]
+        list_store,
+        #[strong]
+        idle_count,
+        move || {
+            sync_idle_from_orchestrator(&list_store, &idle_count);
+        }
+    ));
+
     setup_settings_bindings(
         application,
         &settings,
@@ -856,6 +915,7 @@ pub fn create_main_ui(
         filter_state.clone(),
         sort_mode_cache.clone(),
         on_filters_changed.clone(),
+        on_apps_retired,
     );
 
     achievement_loader.on_rescan_started(clone!(
@@ -941,9 +1001,7 @@ pub fn create_main_ui(
             }
 
             let has_selection = !list_selection_model.selection().is_empty();
-            set_app_action_enabled(&application, "unlock_all_apps", has_selection);
-            set_app_action_enabled(&application, "lock_all_apps", has_selection);
-            set_app_action_enabled(&application, "export_selected_progress", has_selection);
+            set_selection_actions_enabled(&application, has_selection);
             set_context_popover_to_app_list_context(&menu_model, &application);
             list_stack.set_visible_child_name("list");
         }
@@ -1215,6 +1273,7 @@ pub fn create_main_ui(
 
                     let app_id = app.app_id();
                     app.set_is_idling(active);
+                    idle_pending(app_id, true);
                     apply_idle_cap_delta(&list_store, &idle_count, if active { 1 } else { -1 });
                     if filter_state.only_idling.get() {
                         list_custom_filter.changed(gtk::FilterChange::Different);
@@ -1223,23 +1282,25 @@ pub fn create_main_ui(
 
                     let handle = spawn_blocking(move || {
                         if active {
-                            LaunchApp { app_id }.request().map(|_| ())
+                            LaunchApp { app_id, idle: true }.request().map(|_| ())
                         } else {
                             StopApp { app_id }.request().map(|_| ())
                         }
                     });
 
                     MainContext::default().spawn_local(clone!(
-                        #[weak]
+                        #[strong]
                         list_store,
                         #[strong]
                         idle_count,
-                        #[weak]
+                        #[strong]
                         list_custom_filter,
                         #[strong]
                         filter_state,
                         async move {
-                            if let Ok(Err(e)) = handle.await {
+                            let result = handle.await;
+                            idle_pending(app_id, false);
+                            if let Ok(Err(e)) = result {
                                 eprintln!(
                                     "[CLIENT] {} app {app_id} failed: {e:?}",
                                     if active { "Launching" } else { "Stopping" }
@@ -1274,20 +1335,12 @@ pub fn create_main_ui(
 
                     if card.is_selected() {
                         list_selection_model.select_item(position, false);
-                        set_app_action_enabled(&application, "unlock_all_apps", true);
-                        set_app_action_enabled(&application, "lock_all_apps", true);
-                        set_app_action_enabled(&application, "export_selected_progress", true);
+                        set_selection_actions_enabled(&application, true);
                     } else {
                         list_selection_model.unselect_item(position);
                         let selection = list_selection_model.selection();
                         let has_selection = !selection.is_empty();
-                        set_app_action_enabled(&application, "unlock_all_apps", has_selection);
-                        set_app_action_enabled(&application, "lock_all_apps", has_selection);
-                        set_app_action_enabled(
-                            &application,
-                            "export_selected_progress",
-                            has_selection,
-                        );
+                        set_selection_actions_enabled(&application, has_selection);
                     }
                 }
             ));
@@ -1653,6 +1706,22 @@ pub fn create_main_ui(
                 }
                 if let Err(e) = crate::backend::orchestrator_client::spawn_orchestrator(chosen) {
                     eprintln!("[CLIENT] Failed to start orchestrator: {e}");
+                } else if let Err(e) = (SetStealthMode {
+                    on: !get_settings().boolean("appear-in-game"),
+                })
+                .request()
+                {
+                    eprintln!("[CLIENT] Could not set the in-game mode: {e}");
+                    let window = window.clone();
+                    glib::idle_add_local_once(move || {
+                        show_message_dialog(
+                            Some(window.upcast_ref()),
+                            &tr("Could not change the in-game setting"),
+                            &tr(
+                                "The change could not be applied. Restart SamRewritten and try again.",
+                            ),
+                        );
+                    });
                 }
                 app_stack.set_visible_child_name("loading");
                 list_stack.set_visible_child_name("loading");

@@ -20,24 +20,28 @@ use crate::backend::stat_definitions::{
     AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo,
     IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo,
 };
+use crate::backend::stats_access::{AppScoped, StatsAccess, Stealth};
 use crate::backend::types::UserStatType;
 use crate::backend::user_unlock_times::{self, AchievementUnlock};
 use crate::dev_println;
-use crate::steam_client::steamworks_types::{
-    AppId_t, CSteamID, EResult, GlobalAchievementPercentagesReady_t, UserStatsReceived_t,
-};
-use crate::steam_client::wrapper_types::SteamCallbackId;
+use crate::steam_client::steamworks_types::{AppId_t, CSteamID};
 use crate::utils::ipc_types::SamError;
 use crate::utils::steam_locator::SteamLocator;
+use std::cell::RefCell;
+use std::collections::HashSet;
 use std::env;
+use std::rc::Rc;
 use std::time::UNIX_EPOCH;
 
 pub struct AppManager {
     app_id: AppId_t,
-    connected_steam: ConnectedSteam,
+    connected_steam: Rc<ConnectedSteam>,
+    stats: Box<dyn StatsAccess>,
     /// Parsed language, so a change re-parses instead of serving stale names.
     loaded_language: Option<String>,
     user_stats_received: bool,
+    /// A deferred or imported write does not reach a store until much later.
+    pending_writes: RefCell<Vec<(String, bool)>>,
     achievement_definitions: Vec<AchievementDefinition>,
     stat_definitions: Vec<StatDefinition>,
 }
@@ -64,9 +68,18 @@ fn adler32(data: &[u8]) -> u32 {
 }
 
 impl AppManager {
-    pub fn new_connected(app_id: AppId_t) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new_connected(
+        app_id: AppId_t,
+        stealth: bool,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         unsafe {
-            env::set_var("SteamAppId", app_id.to_string());
+            env::remove_var("SteamGameId");
+            env::remove_var("SteamOverlayGameId");
+            if stealth {
+                env::remove_var("SteamAppId");
+            } else {
+                env::set_var("SteamAppId", app_id.to_string());
+            }
         }
 
         #[cfg(feature = "cli")]
@@ -81,11 +94,30 @@ impl AppManager {
             }
         };
 
+        if stealth {
+            let client_user = connected_steam.client_user().inspect_err(|e| {
+                eprintln!("[APP MANAGER] Could not open IClientUser to check ownership: {e}");
+            })?;
+            if !client_user.get_subscribed_apps().contains(&app_id) {
+                eprintln!("[APP MANAGER] App {app_id} is not on this account");
+                return Err(Box::new(SamError::SteamConnectionFailed));
+            }
+        }
+
+        let connected_steam = Rc::new(connected_steam);
+        let stats: Box<dyn StatsAccess> = if stealth {
+            Box::new(Stealth::new(Rc::clone(&connected_steam), app_id)?)
+        } else {
+            Box::new(AppScoped::new(Rc::clone(&connected_steam)))
+        };
+
         Ok(Self {
             app_id,
             connected_steam,
+            stats,
             loaded_language: None,
             user_stats_received: false,
+            pending_writes: RefCell::new(Vec::new()),
             achievement_definitions: vec![],
             stat_definitions: vec![],
         })
@@ -107,103 +139,10 @@ impl AppManager {
             return Ok(());
         }
 
-        let steam_id = match self.connected_steam.user.get_steam_id() {
-            Ok(id) => id,
-            Err(e) => {
-                eprintln!("[APP MANAGER] Error getting steam id: {}", e);
-                return Err(SamError::UnknownError);
-            }
-        };
-
-        dev_println!(
-            "APPSRV",
-            "Requesting current stats for current user: {:?}",
-            steam_id
-        );
-
-        // A timeout here is non-fatal: proceed with whatever stats Steam has
-        // cached rather than failing the whole load.
-        match self.wait_for_user_stats(steam_id) {
-            Ok(EResult::k_EResultOK) => self.user_stats_received = true,
-            Ok(result) => {
-                eprintln!(
-                    "[APP MANAGER] RequestCurrentStats returned {result:?}; continuing with cached stats"
-                )
-            }
-            Err(SamError::Timeout) => {
-                eprintln!(
-                    "[APP MANAGER] RequestCurrentStats timed out; continuing with cached stats"
-                )
-            }
-            Err(e) => return Err(e),
+        if self.stats.prime()? {
+            self.user_stats_received = true;
         }
         Ok(())
-    }
-
-    /// Request stats for `steam_id` (current user or any other) and block until
-    /// Steam services the `UserStatsReceived_t` callback, returning its result
-    /// code. Shared by the current-user path and the other-user lookups.
-    fn wait_for_user_stats(&self, steam_id: CSteamID) -> Result<EResult, SamError> {
-        let callback_handle = match self.connected_steam.user_stats.request_user_stats(steam_id) {
-            Ok(callback_handle) => callback_handle,
-            Err(e) => {
-                eprintln!("[APP MANAGER] Error requesting user stats: {}", e);
-                return Err(SamError::UnknownError);
-            }
-        };
-
-        // Try for 30 seconds at ~60 fps. Bulk operations spawn many workers
-        // that all queue user-stats requests through Steam's single IPC, so a
-        // single request can wait a while before Steam services it.
-        for _ in 0..1800 {
-            let completed = match self
-                .connected_steam
-                .utils
-                .is_api_call_completed(callback_handle)
-            {
-                Ok(res) => res,
-                Err(e) => {
-                    eprintln!(
-                        "[APP MANAGER] Error checking request_user_stats api call completed: {}",
-                        e
-                    );
-                    return Err(SamError::UnknownError);
-                }
-            };
-
-            if completed {
-                let result = match self
-                    .connected_steam
-                    .utils
-                    .get_api_call_result::<UserStatsReceived_t>(
-                        callback_handle,
-                        SteamCallbackId::UserStatsReceived,
-                    ) {
-                    Ok(res) => res,
-                    Err(e) => {
-                        eprintln!(
-                            "[APP MANAGER] Error getting request_user_stats api call result: {}",
-                            e
-                        );
-                        return Err(SamError::UnknownError);
-                    }
-                };
-
-                let (game_id, code, user) =
-                    (result.m_nGameID, result.m_eResult, result.m_steamIDUser);
-                dev_println!(
-                    "APPSRV",
-                    "User stats received callback: game {game_id}, result {code:?}, user {}",
-                    user.m_steamid
-                );
-                return Ok(result.m_eResult);
-            }
-
-            std::thread::sleep(std::time::Duration::from_millis(17));
-        }
-
-        eprintln!("[APP MANAGER] Requesting user stats timed out");
-        Err(SamError::Timeout)
     }
 
     /// Resolve a `friend` string — either a SteamID64 or a persona name from the
@@ -261,19 +200,18 @@ impl AppManager {
 
         // No local cache: depend on the live request, so a non-OK result means
         // the target's game details / achievements are private.
-        let result = self.wait_for_user_stats(steam_id)?;
-        if result != EResult::k_EResultOK {
-            eprintln!("[APP MANAGER] RequestUserStats for {steam_id64} returned {result:?}");
-            return Err(SamError::ProfilePrivate);
-        }
+        self.stats
+            .request_other_user_stats(steam_id)
+            .inspect_err(|e| {
+                eprintln!("[APP MANAGER] Could not load stats for {steam_id64}: {e:?}");
+            })?;
 
         let names = user_unlock_times::read_schema_achievements(self.app_id)?;
         let mut out = Vec::with_capacity(names.len());
         for (api_name, display_name) in names {
             let (achieved, unlock_time) = self
-                .connected_steam
-                .user_stats
-                .get_user_achievement_and_unlock_time(steam_id, &api_name)
+                .stats
+                .get_other_user_achievement(steam_id, &api_name)
                 .unwrap_or((false, 0));
             out.push(AchievementUnlock {
                 api_name,
@@ -300,14 +238,25 @@ impl AppManager {
     /// global pick is matched loosely and answered with this schema's own spelling.
     /// A language this app lacks falls back to the game's, not to english.
     fn resolve_language(&self, language: &str, schema: &KeyValue) -> String {
-        if !language.is_empty()
-            && let Some(offered) = schema_languages(schema)
-                .into_iter()
-                .find(|l| l.eq_ignore_ascii_case(language))
-        {
+        if let Some(offered) = self.schema_spelling(language, schema) {
             return offered;
         }
-        self.connected_steam.apps.get_current_game_language()
+        // An override is stored in the user's own spelling, not the schema's.
+        match self.stats.current_game_language() {
+            Some(current) if !current.is_empty() => {
+                self.schema_spelling(&current, schema).unwrap_or(current)
+            }
+            _ => "english".to_string(),
+        }
+    }
+
+    fn schema_spelling(&self, language: &str, schema: &KeyValue) -> Option<String> {
+        if language.is_empty() {
+            return None;
+        }
+        schema_languages(schema)
+            .into_iter()
+            .find(|l| l.eq_ignore_ascii_case(language))
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
@@ -497,46 +446,12 @@ impl AppManager {
         with_global_achieved: bool,
         language: &str,
     ) -> Result<Vec<AchievementInfo>, SamError> {
-        let mut global_stats_fetched = EResult::k_EResultFail;
-        if with_global_achieved {
-            let callback_handle = self
-                .connected_steam
-                .user_stats
-                .request_global_achievement_percentages()
-                .map_err(|_| SamError::UnknownError)?;
+        self.ensure_definitions(language)?;
 
-            // Try for 10 seconds at 60 fps
-            for _ in 0..600 {
-                if self
-                    .connected_steam
-                    .utils
-                    .is_api_call_completed(callback_handle)
-                    .map_err(|_| SamError::UnknownError)?
-                {
-                    let result = self
-                        .connected_steam
-                        .utils
-                        .get_api_call_result::<GlobalAchievementPercentagesReady_t>(
-                            callback_handle,
-                            SteamCallbackId::GlobalAchievementPercentagesReady,
-                        )
-                        .map_err(|_| SamError::UnknownError)?;
-                    global_stats_fetched = result.m_eResult;
-                    let (game_id, code) = (result.m_nGameID, result.m_eResult);
-                    dev_println!(
-                        "APPSRV",
-                        "Global achievement percentages callback: game {game_id}, result {code:?}"
-                    );
-                    break;
-                }
-
-                std::thread::sleep(std::time::Duration::from_millis(17));
-            }
-        }
+        let global_stats_fetched =
+            with_global_achieved && self.stats.request_global_percentages()?;
 
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
-
-        self.ensure_definitions(language)?;
 
         for def in self.achievement_definitions.iter() {
             if def.id.is_empty() {
@@ -546,21 +461,12 @@ impl AppManager {
             }
 
             let def_id = &def.id;
-            match self
-                .connected_steam
-                .user_stats
-                .get_achievement_and_unlock_time(def_id)
-            {
+            match self.stats.get_achievement_and_unlock_time(def_id) {
                 Ok((is_achieved, unlock_time)) => {
-                    let global_achieved_percent = if global_stats_fetched == EResult::k_EResultFail
-                    {
+                    let global_achieved_percent = if !global_stats_fetched {
                         None
                     } else {
-                        match self
-                            .connected_steam
-                            .user_stats
-                            .get_achievement_achieved_percent(def_id)
-                        {
+                        match self.stats.get_achievement_achieved_percent(def_id) {
                             Ok(percent) => Some(percent),
                             Err(_) => {
                                 dev_println!(
@@ -611,6 +517,19 @@ impl AppManager {
             self.app_id
         );
 
+        let readable = self
+            .achievement_definitions
+            .iter()
+            .filter(|def| !def.id.is_empty())
+            .count();
+        if achievement_infos.is_empty() && readable > 0 {
+            eprintln!(
+                "[APP MANAGER] Steam served none of the {readable} achievements for app {}",
+                self.app_id
+            );
+            return Err(SamError::SteamConnectionFailed);
+        }
+
         Ok(achievement_infos)
     }
 
@@ -627,11 +546,7 @@ impl AppManager {
                         continue;
                     }
 
-                    let stat_value = match self
-                        .connected_steam
-                        .user_stats
-                        .get_stat_float(&definition.base.id)
-                    {
+                    let stat_value = match self.stats.get_stat_float(&definition.base.id) {
                         Ok(value) => {
                             if value.is_nan() {
                                 dev_println!(
@@ -672,11 +587,7 @@ impl AppManager {
                         continue;
                     }
 
-                    let stat_value = match self
-                        .connected_steam
-                        .user_stats
-                        .get_stat_i32(&definition.base.id)
-                    {
+                    let stat_value = match self.stats.get_stat_i32(&definition.base.id) {
                         Ok(value) => value,
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
@@ -703,6 +614,26 @@ impl AppManager {
             };
         }
 
+        let readable = self
+            .stat_definitions
+            .iter()
+            .filter(|d| match d {
+                StatDefinition::Float(def) => !def.base.id.is_empty(),
+                StatDefinition::Integer(def) => !def.base.id.is_empty(),
+            })
+            .count();
+        let has_achievements = self
+            .achievement_definitions
+            .iter()
+            .any(|def| !def.id.is_empty());
+        if statistics_info.is_empty() && readable > 0 && !has_achievements {
+            eprintln!(
+                "[APP MANAGER] Steam served none of the {readable} stats for app {}",
+                self.app_id
+            );
+            return Err(SamError::SteamConnectionFailed);
+        }
+
         Ok(statistics_info)
     }
 
@@ -712,53 +643,68 @@ impl AppManager {
         unlock: bool,
         store: bool,
     ) -> Result<bool, SamError> {
-        if unlock {
-            match self
-                .connected_steam
-                .user_stats
-                .set_achievement(achievement_id)
-            {
-                Ok(_) => {
-                    if store {
-                        return self
-                            .connected_steam
-                            .user_stats
-                            .store_stats()
-                            .map_err(|_| SamError::StatStoreFailed);
-                    }
-                    Ok(true)
-                }
-                Err(_) => Err(SamError::LockUnlockAchievementFailed),
-            }
+        let written = if unlock {
+            self.stats.set_achievement(achievement_id)
         } else {
-            match self
-                .connected_steam
-                .user_stats
-                .clear_achievement(achievement_id)
-            {
-                Ok(_) => {
-                    if store {
-                        return self
-                            .connected_steam
-                            .user_stats
-                            .store_stats()
-                            .map_err(|_| SamError::StatStoreFailed);
-                    }
-                    Ok(true)
-                }
-                Err(_) => Err(SamError::LockUnlockAchievementFailed),
-            }
+            self.stats.clear_achievement(achievement_id)
+        };
+        if written.is_err() {
+            return Err(SamError::LockUnlockAchievementFailed);
         }
+
+        self.pending_writes
+            .borrow_mut()
+            .push((achievement_id.to_string(), unlock));
+
+        if !store {
+            return Ok(true);
+        }
+
+        self.store_stats_and_achievements()
     }
 
     /// `Ok(false)` is Steam accepting the call and declining to store. Nothing
     /// set before this point is committed until it returns true, so callers
     /// file history entries and report success on the answer.
     pub fn store_stats_and_achievements(&self) -> Result<bool, SamError> {
-        self.connected_steam
-            .user_stats
+        // Taken before the store, so a failed one leaves nothing behind.
+        let mut pending = std::mem::take(&mut *self.pending_writes.borrow_mut());
+        pending.reverse();
+        let mut seen = HashSet::new();
+        pending.retain(|(id, _)| seen.insert(id.clone()));
+
+        let stored = self
+            .stats
             .store_stats()
-            .map_err(|_| SamError::StatStoreFailed)
+            .map_err(|_| SamError::StatStoreFailed)?;
+
+        if stored && !pending.is_empty() {
+            let failed = pending
+                .iter()
+                .filter(|(id, expected)| !self.stats.verify_achievement(id, *expected))
+                .count();
+            if failed == pending.len() {
+                eprintln!(
+                    "[APP MANAGER] no achievement write took for app {}; refusing to report success",
+                    self.app_id
+                );
+                return Err(SamError::LockUnlockAchievementFailed);
+            }
+            if failed > 0 {
+                eprintln!(
+                    "[APP MANAGER] {failed} of {} achievement writes did not take for app {}",
+                    pending.len(),
+                    self.app_id
+                );
+            }
+        }
+        if !stored {
+            eprintln!(
+                "[APP MANAGER] Steam declined to store for app {}",
+                self.app_id
+            );
+        }
+        Ok(stored)
     }
 
     pub fn read_int_stat_state(&self, id: &str) -> StatState<i32> {
@@ -771,7 +717,7 @@ impl AppManager {
             })
             .map(|d| (d.min_value, d.max_value, d.increment_only, d.default_value))
             .unwrap_or((i32::MIN, i32::MAX, false, 0));
-        let current = self.connected_steam.user_stats.get_stat_i32(id).ok();
+        let current = self.stats.get_stat_i32(id).ok();
         StatState {
             min,
             max,
@@ -791,7 +737,7 @@ impl AppManager {
             })
             .map(|d| (d.min_value, d.max_value, d.increment_only, d.default_value))
             .unwrap_or((f32::MIN, f32::MAX, false, 0.0));
-        let current = self.connected_steam.user_stats.get_stat_float(id).ok();
+        let current = self.stats.get_stat_float(id).ok();
         StatState {
             min,
             max,
@@ -816,27 +762,20 @@ impl AppManager {
                 continue;
             }
 
-            match self
-                .connected_steam
-                .user_stats
-                .set_achievement(achievement.id.as_str())
-            {
-                Ok(_) => {}
-                Err(_) => {
-                    eprintln!(
-                        "[APP MANAGER] Failed to unlock achievement for app {} while unlocking all: {achievement:?}",
-                        self.app_id
-                    );
-                    has_failures = true;
-                }
+            if self.stats.set_achievement(achievement.id.as_str()).is_err() {
+                eprintln!(
+                    "[APP MANAGER] Failed to unlock achievement for app {} while unlocking all: {achievement:?}",
+                    self.app_id
+                );
+                has_failures = true;
+                continue;
             }
+            self.pending_writes
+                .borrow_mut()
+                .push((achievement.id, true));
         }
 
-        let stored = self
-            .connected_steam
-            .user_stats
-            .store_stats()
-            .map_err(|_| SamError::StatStoreFailed)?;
+        let stored = self.store_stats_and_achievements()?;
 
         if has_failures {
             Err(SamError::LockUnlockAchievementFailed)
@@ -846,47 +785,39 @@ impl AppManager {
     }
 
     pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, SamError> {
-        match self
-            .connected_steam
-            .user_stats
-            .set_stat_i32(stat_name, stat_value)
-        {
-            Ok(_) => self
-                .connected_steam
-                .user_stats
-                .store_stats()
-                .map_err(|_| SamError::StatStoreFailed),
+        match self.stats.set_stat_i32(stat_name, stat_value) {
+            Ok(_) => self.store_stats_and_achievements(),
             Err(_) => Err(SamError::UnknownError),
         }
     }
 
     pub fn set_stat_f32(&self, stat_name: &str, stat_value: f32) -> Result<bool, SamError> {
-        match self
-            .connected_steam
-            .user_stats
-            .set_stat_float(stat_name, stat_value)
-        {
-            Ok(_) => self
-                .connected_steam
-                .user_stats
-                .store_stats()
-                .map_err(|_| SamError::StatStoreFailed),
+        match self.stats.set_stat_float(stat_name, stat_value) {
+            Ok(_) => self.store_stats_and_achievements(),
             Err(_) => Err(SamError::UnknownError),
         }
     }
 
     pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, SamError> {
-        match self
-            .connected_steam
-            .user_stats
-            .reset_all_stats(achievements_too)
-        {
-            Ok(_) => self
-                .connected_steam
-                .user_stats
-                .store_stats()
-                .map_err(|_| SamError::StatStoreFailed),
-            Err(_) => Err(SamError::UnknownError),
+        if achievements_too {
+            self.pending_writes.borrow_mut().clear();
+        }
+        match self.stats.reset_all_stats(achievements_too) {
+            Ok(true) => self.store_stats_and_achievements(),
+            Ok(false) => {
+                eprintln!(
+                    "[APP MANAGER] Steam refused ResetAllStats for app {}",
+                    self.app_id
+                );
+                Ok(false)
+            }
+            Err(e) => {
+                eprintln!(
+                    "[APP MANAGER] ResetAllStats failed for app {}: {e:?}",
+                    self.app_id
+                );
+                Err(SamError::UnknownError)
+            }
         }
     }
 

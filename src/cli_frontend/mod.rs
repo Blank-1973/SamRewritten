@@ -16,8 +16,8 @@
 use crate::backend::local_stats::read_schema_languages;
 use crate::backend::orchestrator_client::{
     AppProgress, ExportApps, GetAchievementsAndStats, GetSubscribedAppList, ImportApps, LaunchApp,
-    Request, ResetStats, SetAchievement, SetFloatStat, SetIntStat, StoreStatsAndAchievements,
-    UnlockAllAchievements, set_orchestrator, shutdown_and_wait,
+    Request, ResetStats, SetAchievement, SetFloatStat, SetIntStat, SetStealthMode,
+    StoreStatsAndAchievements, UnlockAllAchievements, set_orchestrator, shutdown_and_wait,
 };
 use crate::backend::stat_definitions::StatInfo;
 use crate::utils::app_paths::get_executable_path;
@@ -48,6 +48,10 @@ static INTERRUPTED: AtomicBool = AtomicBool::new(false);
 struct Cli {
     #[command(subcommand)]
     command: Command,
+
+    /// Manage apps without appearing in-game.
+    #[arg(long, global = true)]
+    stealth: bool,
 }
 
 #[derive(Subcommand)]
@@ -168,6 +172,17 @@ pub fn main() -> ExitCode {
         return ExitCode::FAILURE;
     }
 
+    if cli.stealth {
+        if matches!(cli.command, Command::Idle { .. }) {
+            eprintln!("Note: idling exists to appear in-game, so --stealth does not apply to it.");
+        }
+        if let Err(e) = (SetStealthMode { on: true }).request() {
+            eprintln!("Failed to enable stealth mode: {e}");
+            shutdown_and_wait();
+            return ExitCode::FAILURE;
+        }
+    }
+
     let code = run_command(cli.command);
     shutdown_and_wait();
     code
@@ -256,7 +271,7 @@ fn run_command(command: Command) -> ExitCode {
         } => set_stat(app_id, stat_id, value),
 
         Command::Idle { app_id } => {
-            if let Err(e) = (LaunchApp { app_id }).request() {
+            if let Err(e) = (LaunchApp { app_id, idle: true }).request() {
                 eprintln!("Failed to connect to Steam: {e}");
                 return ExitCode::FAILURE;
             }
@@ -386,7 +401,12 @@ fn set_achievements(app_id: u32, ids: Vec<String>, unlocked: bool) -> ExitCode {
     }
     let verb = if unlocked { "unlock" } else { "lock" };
 
-    if let Err(e) = (LaunchApp { app_id }).request() {
+    if let Err(e) = (LaunchApp {
+        app_id,
+        idle: false,
+    })
+    .request()
+    {
         eprintln!("Failed to connect to Steam: {e}");
         return ExitCode::FAILURE;
     }
