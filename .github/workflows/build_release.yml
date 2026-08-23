@@ -108,19 +108,19 @@ jobs:
           Write-Host "Compiled merged GSettings schemas into $tempSchemaFolder"
         shell: pwsh
 
-      - name: Build GTK-RS application (debug, console)
-        run: cargo build --features win-console --target x86_64-pc-windows-msvc
+      - name: Build GTK-RS application (Adwaita)
+        run: cargo build --release --features adwaita --target x86_64-pc-windows-msvc
 
-      - name: Move console executable to release archive
+      - name: Move Adwaita executable to release archive
         run: |
           $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
-          Copy-Item "target/x86_64-pc-windows-msvc/debug/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-console.exe"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-adw.exe"
         shell: pwsh
 
       - name: Build GTK-RS application (CLI)
         run: cargo build --release --no-default-features --features cli --target x86_64-pc-windows-msvc
 
-      - name: Move console executable to release archive
+      - name: Move CLI executable to release archive
         run: |
           $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
           Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-cli.exe"

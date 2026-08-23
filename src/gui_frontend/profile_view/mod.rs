@@ -512,9 +512,10 @@ pub(crate) fn build_profile_view(
         .homogeneous(true)
         .min_children_per_line(2)
         .max_children_per_line(TILES.len() as u32)
-        // Zero, not 6: the stock stylesheet already pads every flowboxchild by 3px.
-        .row_spacing(0)
-        .column_spacing(0)
+        // Otherwise unwanted padding occurs
+        .css_name("unstyled-flowbox")
+        .row_spacing(6)
+        .column_spacing(6)
         .margin_top(18)
         .build();
     let mut tile_widgets = Vec::with_capacity(TILES.len());
