@@ -176,9 +176,13 @@ impl SteamLocator {
             home_path.join(".steam/root"),
         ];
 
+        let mut seen = std::collections::HashSet::new();
         potential_dirs
             .into_iter()
-            .filter(|path| path.exists() && !path.is_symlink())
+            .filter(|path| path.is_dir())
+            .filter(|path| {
+                seen.insert(std::fs::canonicalize(path).unwrap_or_else(|_| path.clone()))
+            })
             .collect()
     }
 
