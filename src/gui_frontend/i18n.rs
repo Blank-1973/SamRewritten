@@ -36,6 +36,9 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("ja", "日本語"),
     ("ru", "Русский"),
     ("de", "Deutsch"),
+    ("uk", "Українська"),
+    ("zh_Hant", "繁體中文"),
+    ("tr", "Türkçe"),
 ];
 
 /// Steam's own language names as they appear in `UserGameStatsSchema_<appid>.bin`,

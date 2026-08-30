@@ -1,6 +1,6 @@
 name: samrewritten
 title: SamRewritten
-version: '1.5.0'
+version: '1.5.1'
 summary: Steam achievements and stats manager
 description: Unlock achievements and stats on your Steam account
 confinement: strict
@@ -48,6 +48,11 @@ parts:
       install -Dm644 assets/org.samrewritten.SamRewritten.gschema.xml \
         "${CRAFT_PART_INSTALL}/usr/share/glib-2.0/schemas/org.samrewritten.SamRewritten.gschema.xml"
       glib-compile-schemas "${CRAFT_PART_INSTALL}/usr/share/glib-2.0/schemas/"
+      # Translations compiled by build.rs; i18n::locale_dir looks for them here.
+      if [ -d locale ]; then
+        mkdir -p "${CRAFT_PART_INSTALL}/usr/share/locale"
+        cp -r locale/. "${CRAFT_PART_INSTALL}/usr/share/locale/"
+      fi
 
   launcher:
     plugin: nil

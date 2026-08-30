@@ -15,6 +15,12 @@
 
 use std::process::Command;
 
+/// Extra directory names to install a catalogue under. Weblate names files by
+/// script (`zh_Hant`), but libintl looks catalogues up by POSIX locale name: it
+/// strips the territory (`de_AT` -> `de`) and never maps a script, so a `zh_TW`
+/// or `zh_HK` system finds nothing under `zh_Hant`.
+const LOCALE_ALIASES: &[(&str, &[&str])] = &[("zh_Hant", &["zh_TW", "zh_HK"])];
+
 /// Compile each `po/<lang>.po` to `locale/<lang>/LC_MESSAGES/samrewritten.mo`.
 /// Best-effort: a missing `msgfmt` drops translations rather than failing.
 fn compile_translations() {
@@ -47,6 +53,16 @@ fn compile_translations() {
         {
             Ok(s) if s.success() => {
                 println!("cargo:rerun-if-changed=po/{lang}.po");
+                for alias in LOCALE_ALIASES
+                    .iter()
+                    .filter(|(canonical, _)| *canonical == lang)
+                    .flat_map(|(_, aliases)| *aliases)
+                {
+                    let alias_dir = format!("locale/{alias}/LC_MESSAGES");
+                    if std::fs::create_dir_all(&alias_dir).is_ok() {
+                        let _ = std::fs::copy(&out_file, format!("{alias_dir}/samrewritten.mo"));
+                    }
+                }
             }
             Ok(s) => println!("cargo:warning=msgfmt failed for {lang}.po (exit {s})"),
             Err(e) => println!("cargo:warning=skipping translations, msgfmt unavailable: {e}"),

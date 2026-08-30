@@ -1,7 +1,7 @@
 ; Example NSIS script - Prettier Version
 Name SamRewritten
 !define APP_NAME "SamRewritten"
-!define APP_VERSION "1.5.0"
+!define APP_VERSION "1.5.1"
 !define APP_PUBLISHER "Sam Authors"
 !define APP_EXE "samrewritten.exe"
 !define APP_EXE_ADW "samrewritten-adw.exe"
