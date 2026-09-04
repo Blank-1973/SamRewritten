@@ -21,6 +21,8 @@ use crate::utils::action_journal::{Batch, Change, Op};
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib;
+use gtk::prelude::{FilterExt, SorterExt};
+use gtk::{CustomFilter, CustomSorter, FilterChange, SorterChange};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
@@ -28,6 +30,26 @@ pub const SPACING_EVEN: &str = "even";
 pub const SPACING_RANDOM: &str = "random";
 
 const MIN_GAP_MS: u64 = 2_000;
+
+#[derive(Clone)]
+pub struct AchievementModelUpdates {
+    status_filter: CustomFilter,
+    sorter: CustomSorter,
+}
+
+impl AchievementModelUpdates {
+    pub fn new(status_filter: &CustomFilter, sorter: &CustomSorter) -> Self {
+        Self {
+            status_filter: status_filter.clone(),
+            sorter: sorter.clone(),
+        }
+    }
+
+    pub fn changed(&self) {
+        self.status_filter.changed(FilterChange::Different);
+        self.sorter.changed(SorterChange::Different);
+    }
+}
 
 pub fn compute_unlock_times_ms(count: usize, total_ms: u64, spacing: &str) -> Vec<u64> {
     if count == 0 {
@@ -97,6 +119,7 @@ pub async fn run_timed_unlock(
     times_ms: Vec<u64>,
     timed_raw_model: ListStore,
     cancelled: Arc<AtomicBool>,
+    model_updates: AchievementModelUpdates,
 ) {
     debug_assert_eq!(achievements.len(), times_ms.len());
     if achievements.is_empty() {
@@ -152,6 +175,11 @@ pub async fn run_timed_unlock(
             // Only `Ok(Ok(true))` is Steam saying it stored the thing.
             match result {
                 Ok(Ok(true)) => {
+                    achievement.set_unlock_time_seconds(
+                        std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .map_or(0, |duration| duration.as_secs()),
+                    );
                     batch.record(vec![Change::Achievement {
                         id: achievement.id(),
                         name: achievement.name(),
@@ -174,6 +202,7 @@ pub async fn run_timed_unlock(
                     achievement.set_is_achieved(false);
                 }
             }
+            model_updates.changed();
 
             next_index += 1;
         }

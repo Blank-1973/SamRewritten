@@ -85,6 +85,18 @@
             <description>How the achievement view commits toggles. Valid values are 'autocommit' (each switch commits immediately), 'deferred' (toggles build an ordered queue that the user fires later), and 'copytiming' (replay a friend's unlock cadence).</description>
         </key>
 
+        <key name="achievement-order" type="s">
+            <default>'global-percentage'</default>
+            <summary>Achievement Order</summary>
+            <description>How achievements are sorted. Valid values are 'steam-default', 'alphabetical', 'global-percentage', and 'unlock-date'.</description>
+        </key>
+
+        <key name="stat-order" type="s">
+            <default>'steam-default'</default>
+            <summary>Stat Order</summary>
+            <description>How stats are sorted. Valid values are 'steam-default' and 'alphabetical'.</description>
+        </key>
+
         <key name="copy-timing-max-gap-minutes" type="i">
             <default>5</default>
             <summary>Copy Timing Maximum Gap (Minutes)</summary>

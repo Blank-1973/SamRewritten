@@ -16,6 +16,7 @@
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::i18n::{tr, tr_noop};
+use gtk::gio::prelude::MenuModelExt;
 use gtk::prelude::{BoxExt, SettingsExt, ToVariant};
 use gtk::{Label, License, MenuButton, Popover, PopoverMenu, PositionType, Spinner};
 
@@ -397,6 +398,10 @@ fn fill_achievement_language_menu(languages: &[String]) {
     });
 }
 
+/// Entries `set_context_popover_to_app_details_context` puts above the
+/// tab-specific portion, and therefore the first index the latter may clear.
+const APP_DETAILS_FIXED_ITEMS: i32 = 2;
+
 pub fn set_context_popover_to_app_details_context(
     menu_model: &gtk::gio::Menu,
     application: &MainApplication,
@@ -410,13 +415,73 @@ pub fn set_context_popover_to_app_details_context(
         Some(tr("Reset everything").as_str()),
         Some("app.clear_all_stats_and_achievements"),
     );
-    menu_model.append(Some(tr("About").as_str()), Some("app.about"));
+    debug_assert_eq!(menu_model.n_items(), APP_DETAILS_FIXED_ITEMS);
 
     ACHIEVEMENT_LANGUAGES_FROM_FETCH.with(|f| f.set(false));
     fill_achievement_language_menu(&[]);
-    ACHIEVEMENT_LANGUAGE_MENU.with(|menu| {
-        menu_model.append_submenu(Some(tr("Achievement language").as_str()), menu);
-    });
+    set_app_details_view_options(menu_model, true);
 
     set_app_action_enabled(application, "refresh_app_list", false);
+}
+
+/// Replace the tab-specific portion of the app-details menu.
+pub fn set_app_details_view_options(menu_model: &gtk::gio::Menu, achievements: bool) {
+    while menu_model.n_items() > APP_DETAILS_FIXED_ITEMS {
+        menu_model.remove(APP_DETAILS_FIXED_ITEMS);
+    }
+
+    if achievements {
+        ACHIEVEMENT_LANGUAGE_MENU.with(|menu| {
+            menu_model.append_submenu(Some(tr("Achievement language").as_str()), menu);
+        });
+
+        append_target_submenu(
+            menu_model,
+            tr("Achievement order").as_str(),
+            "app.achievement-order",
+            &[
+                (tr("Steam default"), "steam-default"),
+                (tr("Alphabetically"), "alphabetical"),
+                (tr("Global percentage"), "global-percentage"),
+                (tr("Unlock date"), "unlock-date"),
+            ],
+        );
+        append_target_submenu(
+            menu_model,
+            tr("Achievement state").as_str(),
+            "app.achievement-state",
+            &[
+                (tr("All"), "all"),
+                (tr("Locked"), "locked"),
+                (tr("Unlocked"), "unlocked"),
+            ],
+        );
+    } else {
+        append_target_submenu(
+            menu_model,
+            tr("Stat order").as_str(),
+            "app.stat-order",
+            &[
+                (tr("Steam default"), "steam-default"),
+                (tr("Alphabetically"), "alphabetical"),
+            ],
+        );
+    }
+
+    menu_model.append(Some(tr("About").as_str()), Some("app.about"));
+}
+
+fn append_target_submenu(
+    menu_model: &gtk::gio::Menu,
+    label: &str,
+    action: &str,
+    entries: &[(gtk::glib::GString, &str)],
+) {
+    let submenu = gtk::gio::Menu::new();
+    for (label, value) in entries {
+        let item = gtk::gio::MenuItem::new(Some(label.as_str()), None);
+        item.set_action_and_target_value(Some(action), Some(&value.to_variant()));
+        submenu.append_item(&item);
+    }
+    menu_model.append_submenu(Some(label), &submenu);
 }

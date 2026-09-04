@@ -15,6 +15,7 @@
 
 use glib::Object;
 use gtk::glib;
+use std::time::UNIX_EPOCH;
 
 use crate::backend::stat_definitions::AchievementInfo;
 
@@ -26,6 +27,10 @@ impl GAchievementObject {
     pub fn new(info: AchievementInfo) -> Self {
         let global_achieved_percent = info.global_achieved_percent.unwrap_or(0.0);
         let global_achieved_percent_ok = info.global_achieved_percent.is_some();
+        let unlock_time_seconds = info
+            .unlock_time
+            .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+            .map_or(0, |duration| duration.as_secs());
 
         Object::builder()
             .property("search-text", format!("{} {}", info.name, info.description))
@@ -37,6 +42,7 @@ impl GAchievementObject {
                 "unlock-time",
                 info.unlock_time.map(|time| format!("{time:#?}")),
             )
+            .property("unlock-time-seconds", unlock_time_seconds)
             .property("icon-normal", info.icon_normal)
             .property("icon-locked", info.icon_locked)
             .property("permission", info.permission)
@@ -75,6 +81,9 @@ mod imp {
 
         #[property(get, set)]
         unlock_time: RefCell<Option<String>>,
+
+        #[property(get, set)]
+        unlock_time_seconds: Cell<u64>,
 
         #[property(get, set)]
         icon_normal: RefCell<String>,

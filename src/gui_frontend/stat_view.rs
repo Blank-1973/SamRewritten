@@ -15,27 +15,55 @@
 
 use super::gobjects::stat::GStatObject;
 use super::request::{Request, SetFloatStat, SetIntStat};
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::i18n::tr;
 use crate::utils::action_journal::{Batch, Change, Op};
-use gtk::gio::{ListStore, spawn_blocking};
+use gtk::gio::prelude::{ActionMapExt, SettingsExt};
+use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::SignalHandlerId;
 use gtk::glib::object::Cast;
+use gtk::glib::prelude::{StaticVariantType, ToVariant};
 use gtk::glib::translate::FromGlib;
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::{
     BoxExt, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, WidgetExt,
 };
 use gtk::{
-    Adjustment, Align, Box, ClosureExpression, FilterListModel, Frame, Label, ListItem, ListView,
-    NoSelection, Orientation, ScrolledWindow, SignalListItemFactory, SpinButton, StringFilter,
-    StringFilterMatchMode, Widget, glib,
+    Adjustment, Align, Box, ClosureExpression, CustomSorter, FilterListModel, Frame, Label,
+    ListItem, ListView, NoSelection, Orientation, ScrolledWindow, SignalListItemFactory,
+    SortListModel, SpinButton, StringFilter, StringFilterMatchMode, Widget, glib,
 };
 use std::cell::RefCell;
 use std::ffi::c_ulong;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
-pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
+#[derive(Clone, Copy)]
+enum StatOrder {
+    SteamDefault,
+    Alphabetical,
+}
+
+impl StatOrder {
+    fn from_action_target(value: &str) -> Option<Self> {
+        match value {
+            "steam-default" => Some(Self::SteamDefault),
+            "alphabetical" => Some(Self::Alphabetical),
+            _ => None,
+        }
+    }
+
+    fn as_action_target(self) -> &'static str {
+        match self {
+            Self::SteamDefault => "steam-default",
+            Self::Alphabetical => "alphabetical",
+        }
+    }
+}
+
+pub fn create_stats_view(application: &MainApplication) -> (Frame, ListStore, StringFilter) {
+    let settings = get_settings();
     let stats_list_factory = SignalListItemFactory::new();
     let app_stats_model = ListStore::new::<GStatObject>();
 
@@ -48,8 +76,58 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
         .model(&app_stats_model)
         .filter(&app_stats_string_filter)
         .build();
+
+    let stat_sorter = CustomSorter::new(|obj1, obj2| {
+        let stat1 = obj1.downcast_ref::<GStatObject>().unwrap();
+        let stat2 = obj2.downcast_ref::<GStatObject>().unwrap();
+        stat1
+            .display_name()
+            .to_lowercase()
+            .cmp(&stat2.display_name().to_lowercase())
+            .into()
+    });
+    let app_stats_sort_model = SortListModel::builder()
+        .model(&app_stats_filter_model)
+        .build();
+    let initial_order = StatOrder::from_action_target(&settings.string("stat-order"))
+        .unwrap_or(StatOrder::SteamDefault);
+    if matches!(initial_order, StatOrder::Alphabetical) {
+        app_stats_sort_model.set_sorter(Some(&stat_sorter));
+    }
+
+    let order_action = SimpleAction::new_stateful(
+        "stat-order",
+        Some(&String::static_variant_type()),
+        &initial_order.as_action_target().to_variant(),
+    );
+    order_action.connect_activate(glib::clone!(
+        #[strong]
+        stat_sorter,
+        #[strong]
+        settings,
+        #[weak(rename_to = sort_model)]
+        app_stats_sort_model,
+        move |action, target| {
+            let Some(value) = target.and_then(|target| target.str()) else {
+                return;
+            };
+            let Some(order) = StatOrder::from_action_target(value) else {
+                return;
+            };
+            action.set_state(&value.to_variant());
+            if let Err(e) = settings.set_string("stat-order", value) {
+                eprintln!("[CLIENT] Error saving stat order: {e:?}");
+            }
+            match order {
+                StatOrder::SteamDefault => sort_model.set_sorter(None::<&CustomSorter>),
+                StatOrder::Alphabetical => sort_model.set_sorter(Some(&stat_sorter)),
+            }
+        }
+    ));
+    application.add_action(&order_action);
+
     let app_stats_selection_model = NoSelection::new(Option::<ListStore>::None);
-    app_stats_selection_model.set_model(Some(&app_stats_filter_model));
+    app_stats_selection_model.set_model(Some(&app_stats_sort_model));
 
     let app_stats_list_view = ListView::builder()
         .orientation(Orientation::Vertical)
@@ -365,4 +443,14 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
         .build();
 
     (app_stats_frame, app_stats_model, app_stats_string_filter)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::StatOrder;
+
+    #[test]
+    fn stat_order_rejects_unknown_action_targets() {
+        assert!(StatOrder::from_action_target("unknown").is_none());
+    }
 }

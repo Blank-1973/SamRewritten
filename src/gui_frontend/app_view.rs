@@ -233,7 +233,8 @@ pub fn create_app_view(
         &app_achievement_count_value,
     );
 
-    let (app_stat_scrolled_window, app_stat_model, app_stat_string_filter) = create_stats_view();
+    let (app_stat_scrolled_window, app_stat_model, app_stat_string_filter) =
+        create_stats_view(application);
 
     let app_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)

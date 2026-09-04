@@ -43,8 +43,8 @@ use crate::gui_frontend::request::{
     AppProgress, GetCollections, GetRunningApps, LaunchApp, Request, SetStealthMode, StopApp,
 };
 use crate::gui_frontend::ui_components::{
-    create_context_menu_button, set_context_popover_to_app_list_context,
-    set_context_popover_to_profile_context,
+    create_context_menu_button, set_app_details_view_options,
+    set_context_popover_to_app_list_context, set_context_popover_to_profile_context,
 };
 use crate::gui_frontend::widgets::steam_app_card::{CARD_HEIGHT, CARD_MIN_WIDTH, SteamAppCard};
 use crate::utils::action_journal;
@@ -393,8 +393,8 @@ pub fn create_main_ui(
         app_stack,
         app_shimmer_image,
         app_label,
-        _app_achievements_button,
-        _app_stats_button,
+        app_achievements_button,
+        app_stats_button,
         app_achievement_count_value,
         app_stats_count_value,
         app_type_value,
@@ -475,6 +475,25 @@ pub fn create_main_ui(
         context_menu_button_loading_progress_label,
         context_menu_button_info_label,
     ) = create_context_menu_button();
+    app_achievements_button.connect_clicked(clone!(
+        #[weak]
+        menu_model,
+        move |_| set_app_details_view_options(&menu_model, true)
+    ));
+    app_stats_button.connect_clicked(clone!(
+        #[weak]
+        menu_model,
+        move |_| set_app_details_view_options(&menu_model, false)
+    ));
+    app_stack.connect_visible_child_name_notify(clone!(
+        #[weak]
+        menu_model,
+        move |stack| match stack.visible_child_name().as_deref() {
+            Some("achievements") => set_app_details_view_options(&menu_model, true),
+            Some("stats") => set_app_details_view_options(&menu_model, false),
+            _ => {}
+        }
+    ));
     let sidebar_button = ToggleButton::builder()
         .icon_name("sidebar-show-symbolic")
         .tooltip_text(tr("Show or hide the sidebar").as_str())

@@ -19,6 +19,7 @@ use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::mode_state::GUnlockModeState;
 use crate::gui_frontend::request::{Request, SetAchievement};
 use crate::gui_frontend::unlock_queue::UnlockQueue;
+use crate::gui_frontend::unlock_scheduler::AchievementModelUpdates;
 use crate::gui_frontend::widgets::achievement_row::AchievementRow;
 use crate::utils::action_journal::{Batch, Change, Op};
 use crate::utils::format::format_achievement_progress;
@@ -44,6 +45,7 @@ pub(super) fn install_row_factory(
     queue_label: &Label,
     cancelled_task: &Arc<AtomicBool>,
     update_autofill: &Rc<dyn Fn()>,
+    model_updates: &AchievementModelUpdates,
 ) {
     factory.connect_setup(clone!(
         #[strong]
@@ -58,6 +60,8 @@ pub(super) fn install_row_factory(
         cancelled_task,
         #[strong]
         update_autofill,
+        #[strong]
+        model_updates,
         #[weak]
         raw_model,
         #[weak]
@@ -93,6 +97,8 @@ pub(super) fn install_row_factory(
                 raw_model,
                 #[weak]
                 start_button,
+                #[strong]
+                model_updates,
                 move |switch| {
                     let Some(achievement_object) =
                         list_item.item().and_downcast::<GAchievementObject>()
@@ -143,12 +149,21 @@ pub(super) fn install_row_factory(
                         achievement_object,
                         #[weak]
                         start_button,
+                        #[strong]
+                        model_updates,
                         async move {
                             let result = handle.await.expect("spawn_blocking task panicked");
                             // Steam accepting the call and then failing to
                             // store it, which is a failure like any other.
                             match result {
                                 Ok(true) => {
+                                    achievement_object.set_unlock_time_seconds(if unlocked {
+                                        std::time::SystemTime::now()
+                                            .duration_since(std::time::UNIX_EPOCH)
+                                            .map_or(0, |duration| duration.as_secs())
+                                    } else {
+                                        0
+                                    });
                                     Batch::new(Op::ManualToggle, app_id_val, "").record(vec![
                                         Change::Achievement {
                                             id: achievement_object.id(),
@@ -180,6 +195,7 @@ pub(super) fn install_row_factory(
                                 }
                             }
                             switch.set_sensitive(true);
+                            model_updates.changed();
                         }
                     ));
                 }

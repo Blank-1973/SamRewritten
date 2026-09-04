@@ -2,114 +2,154 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-02 21:40+0200\n"
+"POT-Creation-Date: 2026-09-03 21:30+0200\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
+#: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
 msgid "Loading..."
 msgstr "Chargement..."
 
-#: src/gui_frontend/ui_components.rs:190
+#: src/gui_frontend/ui_components.rs:191
 msgid "Select all visible apps"
 msgstr "Sélectionner les applications visibles"
 
-#: src/gui_frontend/ui_components.rs:194
+#: src/gui_frontend/ui_components.rs:195
 msgid "Deselect all apps"
 msgstr "Tout désélectionner"
 
-#: src/gui_frontend/ui_components.rs:198
+#: src/gui_frontend/ui_components.rs:199
 msgid "Unlock all in selection"
 msgstr "Tout déverrouiller dans la sélection"
 
-#: src/gui_frontend/ui_components.rs:202
+#: src/gui_frontend/ui_components.rs:203
 msgid "Reset all in selection"
 msgstr "Tout réinitialiser dans la sélection"
 
-#: src/gui_frontend/ui_components.rs:206
+#: src/gui_frontend/ui_components.rs:207
 #: src/gui_frontend/app_list_view/progress_actions.rs:116
 msgid "Export selected apps progress"
 msgstr "Exporter la progression sélection"
 
-#: src/gui_frontend/ui_components.rs:210
+#: src/gui_frontend/ui_components.rs:211
 msgid "Import progress..."
 msgstr "Importer progression..."
 
-#: src/gui_frontend/ui_components.rs:216
+#: src/gui_frontend/ui_components.rs:217
 msgid "Appear in-game while managing"
 msgstr "Apparaître in-game pendant l'édition"
 
-#: src/gui_frontend/ui_components.rs:222
+#: src/gui_frontend/ui_components.rs:223
 msgid "Refresh app list"
 msgstr "Actualiser la liste des apps"
 
-#: src/gui_frontend/ui_components.rs:226
+#: src/gui_frontend/ui_components.rs:227
 msgid "Refresh achievement counts"
 msgstr "Actualiser le décompte de succès"
 
-#: src/gui_frontend/ui_components.rs:229 src/gui_frontend/ui_components.rs:413
+#: src/gui_frontend/ui_components.rs:230 src/gui_frontend/ui_components.rs:471
 msgid "About"
 msgstr "À propos"
 
-#: src/gui_frontend/ui_components.rs:233
+#: src/gui_frontend/ui_components.rs:234
 msgid "Change Steam folder…"
 msgstr "Changer le dossier Steam…"
 
-#: src/gui_frontend/ui_components.rs:240
+#: src/gui_frontend/ui_components.rs:241
 msgid "Bulk process"
 msgstr "Traitement par lot"
 
-#: src/gui_frontend/ui_components.rs:246
+#: src/gui_frontend/ui_components.rs:247
 msgid "System"
 msgstr "Système"
 
-#: src/gui_frontend/ui_components.rs:247
+#: src/gui_frontend/ui_components.rs:248
 msgid "Light"
 msgstr "Clair"
 
-#: src/gui_frontend/ui_components.rs:248
+#: src/gui_frontend/ui_components.rs:249
 msgid "Dark"
 msgstr "Sombre"
 
-#: src/gui_frontend/ui_components.rs:257
+#: src/gui_frontend/ui_components.rs:258
 msgid "Disable animations"
 msgstr "Désactiver les animations"
 
-#: src/gui_frontend/ui_components.rs:261
+#: src/gui_frontend/ui_components.rs:262
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/gui_frontend/ui_components.rs:267
+#: src/gui_frontend/ui_components.rs:268
 msgid "System default"
 msgstr "Système par défaut"
 
-#: src/gui_frontend/ui_components.rs:270
+#: src/gui_frontend/ui_components.rs:271
 msgid "Language"
 msgstr "Langue"
 
-#: src/gui_frontend/ui_components.rs:387
+#: src/gui_frontend/ui_components.rs:388
 msgid "Game default"
 msgstr "Langue du jeu"
 
-#: src/gui_frontend/ui_components.rs:406
+#: src/gui_frontend/ui_components.rs:411
 msgid "Refresh achievements & stats"
 msgstr "Actualiser les succès et statistiques"
 
-#: src/gui_frontend/ui_components.rs:410
+#: src/gui_frontend/ui_components.rs:415
 msgid "Reset everything"
 msgstr "Tout réinitialiser"
 
-#: src/gui_frontend/ui_components.rs:418
+#: src/gui_frontend/ui_components.rs:435
 msgid "Achievement language"
 msgstr "Langue des succès"
 
+#: src/gui_frontend/ui_components.rs:440
+msgid "Achievement order"
+msgstr "Tri des succès"
+
+#: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
+msgid "Steam default"
+msgstr "Par défaut Steam"
+
+#: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
+msgid "Alphabetically"
+msgstr "Alphabétique"
+
+#: src/gui_frontend/ui_components.rs:445
+msgid "Global percentage"
+msgstr "Pourcentage global"
+
+#: src/gui_frontend/ui_components.rs:446
+msgid "Unlock date"
+msgstr "Date de déblocage"
+
+#: src/gui_frontend/ui_components.rs:451
+msgid "Achievement state"
+msgstr "Filtre des succès"
+
+#: src/gui_frontend/ui_components.rs:454
+msgid "All"
+msgstr "Tous"
+
+#: src/gui_frontend/ui_components.rs:455
+msgid "Locked"
+msgstr "Verrouillés"
+
+#: src/gui_frontend/ui_components.rs:456
+msgid "Unlocked"
+msgstr "Déverrouillés"
+
+#: src/gui_frontend/ui_components.rs:462
+msgid "Stat order"
+msgstr "Tri des stats"
+
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
-#: src/gui_frontend/unlock_scheduler.rs:185
+#: src/gui_frontend/unlock_scheduler.rs:217
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
 msgstr "OK"
@@ -293,11 +333,11 @@ msgstr "Succès"
 msgid "Stats"
 msgstr "Statistiques"
 
-#: src/gui_frontend/stat_view.rs:102
+#: src/gui_frontend/stat_view.rs:166
 msgid "Increment only"
 msgstr "Incrément uniquement"
 
-#: src/gui_frontend/stat_view.rs:107
+#: src/gui_frontend/stat_view.rs:171
 msgid "This statistic is protected."
 msgstr "Cette statistique est protégée."
 
@@ -305,19 +345,19 @@ msgstr "Cette statistique est protégée."
 msgid "Stop and go back"
 msgstr "Arrêter et revenir"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:57
+#: src/gui_frontend/achievement_manual_view/mod.rs:58
 msgid "No achievements staged"
 msgstr "Aucun succès préparé"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:58
+#: src/gui_frontend/achievement_manual_view/mod.rs:59
 msgid "{count} staged"
 msgstr "{count} préparé(s)"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:96
+#: src/gui_frontend/achievement_manual_view/mod.rs:97
 msgid "Already at or above target ({progress})"
 msgstr "Déjà à la cible ou au-dessus ({progress})"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:102
+#: src/gui_frontend/achievement_manual_view/mod.rs:103
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "Remplir automatiquement {count} succès ({progress})"
 
@@ -383,7 +423,7 @@ msgid "Spacing"
 msgstr "Espacement"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:234
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:238
 msgid "Choose a friend to copy timing from"
 msgstr "Choisir un ami pour lequel copier le minutage"
 
@@ -404,11 +444,11 @@ msgstr "Écart max"
 msgid "First delay"
 msgstr "Délai initial"
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:101
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:105
 msgid "No friend loaded"
 msgstr "Aucun ami chargé"
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:111
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:115
 msgid "{count} achievements over {time}"
 msgstr "{count} succès sur {time}"
 
@@ -449,148 +489,148 @@ msgid "Try again"
 msgstr "Réessayer"
 
 #: src/gui_frontend/app_list_view/mod.rs:464
-#: src/gui_frontend/app_list_view/mod.rs:1752
+#: src/gui_frontend/app_list_view/mod.rs:1769
 msgid "Name or AppId (Ctrl+K)"
 msgstr "Nom ou AppId (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:480
+#: src/gui_frontend/app_list_view/mod.rs:499
 msgid "Show or hide the sidebar"
 msgstr "Afficher ou masquer la barre latérale"
 
-#: src/gui_frontend/app_list_view/mod.rs:1747
+#: src/gui_frontend/app_list_view/mod.rs:1764
 msgid "Achievement or stat..."
 msgstr "Succès ou statistique..."
 
-#: src/gui_frontend/app_list_view/mod.rs:1866
-#: src/gui_frontend/app_list_view/settings_bindings.rs:333
+#: src/gui_frontend/app_list_view/mod.rs:1883
+#: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr "Impossible de changer l'option in-game"
 
-#: src/gui_frontend/app_list_view/mod.rs:1868
-#: src/gui_frontend/app_list_view/settings_bindings.rs:334
+#: src/gui_frontend/app_list_view/mod.rs:1885
+#: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr ""
 "Le changement n'a pas pu être appliqué. Redémarrez SamRewritten et réessayez."
 
-#: src/gui_frontend/app_list_view/sidebar.rs:58
+#: src/gui_frontend/app_list_view/sidebar.rs:57
 msgid "Hide with no achievements"
 msgstr "Masquer sans succès"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:64
+#: src/gui_frontend/app_list_view/sidebar.rs:63
 msgid "Hide at 100%"
 msgstr "Masquer à 100 %"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:70
+#: src/gui_frontend/app_list_view/sidebar.rs:69
 msgid "Hide at 0%"
 msgstr "Masquer à 0 %"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:76
+#: src/gui_frontend/app_list_view/sidebar.rs:75
 msgid "Hide never launched"
 msgstr "Masquer jamais lancés"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:82
+#: src/gui_frontend/app_list_view/sidebar.rs:81
 msgid "Only currently idling"
 msgstr "Uniquement in-game"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:88
+#: src/gui_frontend/app_list_view/sidebar.rs:87
 msgid "Hide hidden in Steam"
 msgstr "Masquer les masqués Steam"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:94
+#: src/gui_frontend/app_list_view/sidebar.rs:93
 msgid "Show junk"
 msgstr "Afficher superflus"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:108
+#: src/gui_frontend/app_list_view/sidebar.rs:107
 msgid "App ID"
 msgstr "App ID"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:113
+#: src/gui_frontend/app_list_view/sidebar.rs:112
 msgid "Name"
 msgstr "Nom"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:118
+#: src/gui_frontend/app_list_view/sidebar.rs:117
 msgid "Last played"
 msgstr "Lancé récemment"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:123
+#: src/gui_frontend/app_list_view/sidebar.rs:122
 msgid "Playtime"
 msgstr "Temps de jeu"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:128
+#: src/gui_frontend/app_list_view/sidebar.rs:127
 msgid "Completion"
 msgstr "Complétion"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:133
+#: src/gui_frontend/app_list_view/sidebar.rs:132
 msgid "Achievements left"
 msgstr "Succès restants"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:183
+#: src/gui_frontend/app_list_view/sidebar.rs:180
 msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
 msgstr ""
 "Filtre selon un terme de recherche, ce que SamRewritten ne peut pas "
 "reproduire exactement."
 
-#: src/gui_frontend/app_list_view/sidebar.rs:186
+#: src/gui_frontend/app_list_view/sidebar.rs:183
 msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
 msgstr ""
 "Utilise un filtre Steam que SamRewritten ne peut pas reproduire exactement."
 
-#: src/gui_frontend/app_list_view/sidebar.rs:189
+#: src/gui_frontend/app_list_view/sidebar.rs:186
 msgid ""
 "Needs information from Steam that could not be read. Refresh to try again."
 msgstr ""
 "Nécessite des informations de Steam qui n'ont pas pu être lues. Actualisez "
 "pour réessayer."
 
-#: src/gui_frontend/app_list_view/sidebar.rs:192
+#: src/gui_frontend/app_list_view/sidebar.rs:189
 msgid ""
 "Needs your friends' games, which Steam can only tell us when it is online."
 msgstr ""
 "Nécessite les jeux de vos amis, que Steam ne peut indiquer qu'en ligne."
 
-#: src/gui_frontend/app_list_view/sidebar.rs:201
+#: src/gui_frontend/app_list_view/sidebar.rs:198
 msgid "Favorites"
 msgstr "Favoris"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:228
+#: src/gui_frontend/app_list_view/sidebar.rs:225
 msgid "View profile"
 msgstr "Voir le profil"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:283
+#: src/gui_frontend/app_list_view/sidebar.rs:280
 #: src/gui_frontend/profile_view/mod.rs:484
 msgid "Steam user"
 msgstr "Utilisateur Steam"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:305
+#: src/gui_frontend/app_list_view/sidebar.rs:300
 msgid "Steam is offline. What needs its servers is turned off."
 msgstr "Steam est hors ligne. Ce qui dépend de ses serveurs est désactivé."
 
-#: src/gui_frontend/app_list_view/sidebar.rs:316
+#: src/gui_frontend/app_list_view/sidebar.rs:311
 msgid "Fetching completion…"
 msgstr "Chargement de la complétion…"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:322
+#: src/gui_frontend/app_list_view/sidebar.rs:317
 msgid "Click to cancel"
 msgstr "Cliquez pour annuler"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:353
+#: src/gui_frontend/app_list_view/sidebar.rs:348
 msgid "Filters"
 msgstr "Filtres"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:364
+#: src/gui_frontend/app_list_view/sidebar.rs:359
 msgid "Steam collection"
 msgstr "Collection Steam"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:365
-#: src/gui_frontend/app_list_view/sidebar.rs:588
+#: src/gui_frontend/app_list_view/sidebar.rs:360
+#: src/gui_frontend/app_list_view/sidebar.rs:580
 msgid "All games"
 msgstr "Tous les jeux"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:448
+#: src/gui_frontend/app_list_view/sidebar.rs:442
 msgid "Sort by"
 msgstr "Trier par"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:513
+#: src/gui_frontend/app_list_view/sidebar.rs:505
 msgid "Reset filters"
 msgstr "Réinitialiser les filtres"
 
@@ -1359,9 +1399,6 @@ msgstr "Déjà déverrouillé."
 
 #~ msgid "Hide with no unlocks"
 #~ msgstr "Masquer sans succès obtenu"
-
-#~ msgid "Alphabetical"
-#~ msgstr "Alphabétique"
 
 #~ msgid "Recently played"
 #~ msgstr "Lancé récemment"

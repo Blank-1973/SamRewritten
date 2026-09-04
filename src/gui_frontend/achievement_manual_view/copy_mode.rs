@@ -23,7 +23,9 @@ use crate::gui_frontend::gobjects::mode_state::{GUnlockModeState, MODE_COPY_TIMI
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{GetFriendUnlockTimes, GetFriends, GetUserAvatar, Request};
 use crate::gui_frontend::unlock_queue::UnlockQueue;
-use crate::gui_frontend::unlock_scheduler::{compute_copy_timing_ms, run_timed_unlock};
+use crate::gui_frontend::unlock_scheduler::{
+    AchievementModelUpdates, compute_copy_timing_ms, run_timed_unlock,
+};
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::action_journal::Op;
 use crate::utils::format::format_seconds_to_hh_mm_ss;
@@ -72,6 +74,7 @@ pub(super) fn install_copy_mode(
     raw_model: &ListStore,
     timed_raw_model: &ListStore,
     cancelled_task: &Arc<AtomicBool>,
+    model_updates: &AchievementModelUpdates,
     achievement_views_stack: &Stack,
     application: &MainApplication,
 ) {
@@ -82,6 +85,7 @@ pub(super) fn install_copy_mode(
     let raw_model = raw_model.clone();
     let timed_raw_model = timed_raw_model.clone();
     let cancelled_task = cancelled_task.clone();
+    let model_updates = model_updates.clone();
     let achievement_views_stack = achievement_views_stack.clone();
     let application = application.clone();
 
@@ -389,6 +393,8 @@ pub(super) fn install_copy_mode(
         #[strong]
         cancelled_task,
         #[strong]
+        model_updates,
+        #[strong]
         timed_raw_model,
         #[weak(rename_to = raw_model)]
         raw_model,
@@ -425,6 +431,8 @@ pub(super) fn install_copy_mode(
                 timed_raw_model,
                 #[strong]
                 cancelled_task,
+                #[strong]
+                model_updates,
                 async move {
                     run_timed_unlock(
                         app_id_val,
@@ -433,6 +441,7 @@ pub(super) fn install_copy_mode(
                         times_ms,
                         timed_raw_model,
                         cancelled_task,
+                        model_updates,
                     )
                     .await;
                 }
